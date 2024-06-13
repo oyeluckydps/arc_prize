@@ -122,11 +122,10 @@ def draw_top_menu():
     # Draw color palette in 1*10 format with indices above
     palette_start_x = SCREEN_WIDTH - (10 * PALETTE_BLOCK_SIZE) - 20
     palette_start_y = 10
-    index = 0
     color_palette_rects.clear()
-    for col in range(10):
+    for index in range(10):
         color = COLOR_PALETTE[index]
-        palette_rect = pygame.Rect(palette_start_x + col * PALETTE_BLOCK_SIZE, palette_start_y + 8, PALETTE_BLOCK_SIZE, PALETTE_BLOCK_SIZE)
+        palette_rect = pygame.Rect(palette_start_x + index * PALETTE_BLOCK_SIZE, palette_start_y + 8, PALETTE_BLOCK_SIZE, PALETTE_BLOCK_SIZE)
         pygame.draw.rect(screen, color, palette_rect)
         pygame.draw.rect(screen, BLACK, palette_rect, 1)
         color_palette_rects.append(palette_rect)
@@ -136,10 +135,10 @@ def draw_top_menu():
         screen.blit(index_text, index_text.get_rect(center=(palette_rect.centerx, palette_start_y)).topleft)
 
         if selected_color == index:
-            pygame.draw.line(screen, BLACK, (palette_rect.x, palette_rect.y), (palette_rect.x + PALETTE_BLOCK_SIZE, palette_rect.y + PALETTE_BLOCK_SIZE), 2)
-            pygame.draw.line(screen, BLACK, (palette_rect.x + PALETTE_BLOCK_SIZE, palette_rect.y), (palette_rect.x, palette_rect.y + PALETTE_BLOCK_SIZE), 2)
+            contrast = tuple([255-c for c in color])
+            pygame.draw.line(screen, contrast, (palette_rect.x, palette_rect.y), (palette_rect.x + PALETTE_BLOCK_SIZE, palette_rect.y + PALETTE_BLOCK_SIZE), 2)
+            pygame.draw.line(screen, contrast, (palette_rect.x + PALETTE_BLOCK_SIZE, palette_rect.y), (palette_rect.x, palette_rect.y + PALETTE_BLOCK_SIZE), 2)
 
-        index += 1
 
 def handle_color_selection(pos):
     global selected_color, paint_mode
@@ -153,43 +152,33 @@ def handle_color_selection(pos):
                 paint_mode = True
             break
 
-def paint_post_grid(post_matrix, pos, start_x, start_y, cell_size, gap):
+def paint_post_grid(post_matrix, post_rec, pos, gap):
     if paint_mode and selected_color is not None:
-        j = (pos[0] - start_x) // (cell_size + gap)
-        i = (pos[1] - start_y) // (cell_size + gap)
+        n = len(post_matrix)
+        cell_size = int(min((post_rec.width - (n - 1) * gap) / n, (post_rec.height - (n - 1) * gap) / n))
+        start_x = post_rec.x
+        start_y = post_rec.y
+        j = int((pos[0] - start_x) // (cell_size + gap))
+        i = int((pos[1] - start_y) // (cell_size + gap))
         if 0 <= i < len(post_matrix) and 0 <= j < len(post_matrix[0]):
             post_matrix[i][j] = selected_color
 
-def handle_button_click(test_block_index, action):
-    global status_message
-    pre_matrix, post_matrix = test_matrices_by_page[page_number - 1][test_block_index]
 
-    if action == COPY_ACTION:
-        for i in range(len(pre_matrix)):
-            for j in range(len(pre_matrix[i])):
-                post_matrix[i][j] = pre_matrix[i][j]
-    elif action == RESET_ACTION:
-        for i in range(len(post_matrix)):
-            for j in range(len(post_matrix[i])):
-                post_matrix[i][j] = 0
-    elif action == SUBMIT_ACTION:
-        status_message = f"Submitted Page: {page_number}, Block: {test_block_index + 1}"
-
-def draw_grids_in_block(matrix, start_x, start_y, block_width, block_height):
+def draw_grids_in_block(matrix, start_x, start_y, block_width, block_height, gap = 1):
     n = len(matrix)
-    gap = 1  # 1-pixel gap between grid elements
-    cell_size = min((block_width - (n - 1) * gap) / n, (block_height - (n - 1) * gap) / n)
+    cell_size = int(min((block_width - (n - 1) * gap) / n, (block_height - (n - 1) * gap) / n))
     for i in range(n):
         for j in range(n):
             color = COLOR_PALETTE[matrix[i][j]]
             cell_rect = pygame.Rect(start_x + j * (cell_size + gap), start_y + i * (cell_size + gap), cell_size, cell_size)
             pygame.draw.rect(screen, color, cell_rect)
 
-def draw_matrices_block(pre_matrix, post_matrix, block_rect, is_test_block=False, draw_plus=True):
+def draw_matrices_block(pre_matrix, post_matrix, block_rect, index, is_test_block=False, draw_plus=True):
+    global max_min_buttons, page_number, post_grid_params
     margin = 10
     button_height = 40 if is_test_block else 0
 
-    max_grid_size = min(block_rect.width / 2 - 1.5 * margin, block_rect.height - 2 * margin - button_height)
+    max_grid_size = min(block_rect.width / 2 - 1.5 * margin, block_rect.height - 3 * margin - button_height)
     inner_height = inner_width = max_grid_size
 
     start_x = block_rect.x + (block_rect.width - 2 * inner_width - 3 * margin) / 2
@@ -201,8 +190,13 @@ def draw_matrices_block(pre_matrix, post_matrix, block_rect, is_test_block=False
     pygame.draw.rect(screen, BLACK, pre_rect, 2)
     pygame.draw.rect(screen, BLACK, post_rect, 2)
 
-    draw_grids_in_block(pre_matrix, pre_rect.x, pre_rect.y, pre_rect.width, pre_rect.height)
-    draw_grids_in_block(post_matrix, post_rect.x, post_rect.y, post_rect.width, post_rect.height)
+    gap = 1  # 1-pixel gap between grid elements
+
+    draw_grids_in_block(pre_matrix, pre_rect.x, pre_rect.y, pre_rect.width, pre_rect.height, gap)
+    draw_grids_in_block(post_matrix, post_rect.x, post_rect.y, post_rect.width, post_rect.height, gap)
+
+    if is_test_block:
+        post_grid_params.append((post_matrix, post_rect, gap))
 
     arrow_start = (post_rect.x - margin, post_rect.y + inner_height / 2)
     arrow_end = (post_rect.x, post_rect.y + inner_height / 2)
@@ -211,21 +205,30 @@ def draw_matrices_block(pre_matrix, post_matrix, block_rect, is_test_block=False
     pygame.draw.polygon(screen, BLACK, [(arrow_end[0] - 5, arrow_end[1] - 5), (arrow_end[0], arrow_end[1]), (arrow_end[0] - 5, arrow_end[1] + 5)])
 
     if draw_plus:
-        pygame.draw.line(screen, BLACK, (block_rect.right - 15, block_rect.top + 5), (block_rect.right - 5, block_rect.top + 5), 2)
-        pygame.draw.line(screen, BLACK, (block_rect.right - 10, block_rect.top), (block_rect.right - 10, block_rect.top + 10), 2)
+        maximize_rect = pygame.Rect(block_rect.right - 20, block_rect.top, 20, 20)
+        pygame.draw.line(screen, BLACK, (block_rect.right - 15, block_rect.top + 10), (block_rect.right - 5,
+                                                                                    block_rect.top + 10), 2)
+        pygame.draw.line(screen, BLACK, (block_rect.right - 10, block_rect.top + 5), (block_rect.right - 10,
+                                                                                   block_rect.top + 15), 2)
+        max_min_buttons.append((maximize_rect, MAXIMIZE_ACTION, is_test_block, page_number-1, index))
     else:
-        pygame.draw.line(screen, BLACK, (block_rect.right - 15, block_rect.top + 5), (block_rect.right - 5, block_rect.top + 5), 2)
-
+        minimize_rect = pygame.Rect(block_rect.right - 20, block_rect.top, 20, 20)
+        pygame.draw.line(screen, BLACK, (block_rect.right - 15, block_rect.top + 5), (block_rect.right - 5,
+                                                                                      block_rect.top + 5), 2)
+        max_min_buttons.append((minimize_rect, MINIMIZE_ACTION, is_test_block, page_number-1, index))
     return is_test_block, pre_rect, post_rect
 
-def draw_matrices_and_buttons(test_block_rect, margin, button_height, button_width, pre_matrix, post_matrix, draw_plus=True):
-    _, pre_rect, post_rect = draw_matrices_block(pre_matrix, post_matrix, test_block_rect, is_test_block=True, draw_plus=draw_plus)
+def draw_matrices_and_buttons(test_block_rect, margin, button_height, button_width, pre_matrix, post_matrix, index,
+                              draw_plus=True):
+    _, pre_rect, post_rect = draw_matrices_block(pre_matrix, post_matrix, test_block_rect, index, is_test_block=True,
+                                                 draw_plus=draw_plus)
 
     button_y = test_block_rect.y + test_block_rect.height - button_height - margin
+    button_x_offset = (test_block_rect.width - (button_width*3 + margin*4))/2
 
-    copy_button = pygame.Rect(test_block_rect.x + margin, button_y, button_width, button_height)
-    reset_button = pygame.Rect(test_block_rect.x + 2 * margin + button_width, button_y, button_width, button_height)
-    submit_button = pygame.Rect(test_block_rect.x + 3 * margin + 2 * button_width, button_y, button_width, button_height)
+    copy_button = pygame.Rect(test_block_rect.x + margin + button_x_offset, button_y, button_width, button_height)
+    reset_button = pygame.Rect(test_block_rect.x + 2 * margin + button_width + button_x_offset, button_y, button_width, button_height)
+    submit_button = pygame.Rect(test_block_rect.x + 3 * margin + 2 * button_width + button_x_offset, button_y, button_width, button_height)
 
     pygame.draw.rect(screen, BUTTON_COLOR, copy_button, border_radius=10)
     pygame.draw.rect(screen, BUTTON_COLOR, reset_button, border_radius=10)
@@ -250,23 +253,29 @@ def draw_matrices_and_buttons(test_block_rect, margin, button_height, button_wid
     return copy_button, reset_button, submit_button
 
 def maximize_block(original_block):
-    global maximized_block
+    global maximized_block, test_buttons, max_min_buttons, post_grid_params
     maximized_block = original_block
+    test_buttons = []
+    max_min_buttons = []
+    post_grid_params = []
 
 def minimize_block():
-    global maximized_block
+    global maximized_block, test_buttons, max_min_buttons, post_grid_params
     maximized_block = None
+    test_buttons = []
+    max_min_buttons = []
+    post_grid_params = []
 
 def draw_middle_play():
     global test_buttons, maximized_block
     middle_play_rect = pygame.Rect(0, TOP_MENU_HEIGHT, SCREEN_WIDTH, MIDDLE_PLAY_HEIGHT)
     pygame.draw.rect(screen, WHITE, middle_play_rect)
 
+    training_area_width, test_area_width = SCREEN_WIDTH * 0.66, SCREEN_WIDTH * 0.34
+
     if maximized_block is None:
         blocks_count = TRAINING_BLOCKS_COUNT[page_number - 1]
         rows, cols = math.ceil(math.sqrt(blocks_count)), math.ceil(math.sqrt(blocks_count))
-
-        training_area_width, test_area_width = SCREEN_WIDTH * 0.66, SCREEN_WIDTH * 0.34
 
         block_width = training_area_width / cols
         block_height = MIDDLE_PLAY_HEIGHT / rows
@@ -280,7 +289,7 @@ def draw_middle_play():
             pygame.draw.rect(screen, GRAY, block_rect, 2)
 
             pre_matrix, post_matrix = page_matrices[i]
-            draw_matrices_block(pre_matrix, post_matrix, block_rect, draw_plus=True)
+            draw_matrices_block(pre_matrix, post_matrix, block_rect, index=i, draw_plus=True)
 
         test_block_height = MIDDLE_PLAY_HEIGHT / TEST_BLOCKS_COUNT[page_number - 1]
         test_block_offset = 0
@@ -303,7 +312,8 @@ def draw_middle_play():
 
             pre_matrix, post_matrix = test_matrices[i]
             copy_button, reset_button, submit_button = draw_matrices_and_buttons(test_block_rect, margin, button_height,
-                                                                                 button_width, pre_matrix, post_matrix,
+                                                                                 button_width, pre_matrix,
+                                                                                 post_matrix, index = i,
                                                                                  draw_plus=True)
 
             test_buttons.append((copy_button, i, COPY_ACTION))
@@ -311,17 +321,31 @@ def draw_middle_play():
             test_buttons.append((submit_button, i, SUBMIT_ACTION))
     else:
         screen.set_alpha(150)
-        pygame.draw.rect(screen, GRAY, middle_play_rect)  # Fade background
+        # pygame.draw.rect(screen, GRAY, middle_play_rect)  # Fade background
 
         original_block = maximized_block
-        block_rect, is_test_block, page, block_index = original_block
+        is_test_block, page, block_index = original_block
 
         # Enlarge to 80% of the play area
         new_width, new_height = int(SCREEN_WIDTH * 0.8), int(MIDDLE_PLAY_HEIGHT * 0.8)
         block_rect = pygame.Rect((SCREEN_WIDTH - new_width) // 2, TOP_MENU_HEIGHT + (MIDDLE_PLAY_HEIGHT - new_height) // 2, new_width, new_height)
-
+        pygame.draw.rect(screen, LIGHT_GRAY, block_rect)
         pre_matrix, post_matrix = (block_matrices if not is_test_block else test_matrices_by_page)[page][block_index]
-        draw_matrices_block(pre_matrix, post_matrix, block_rect, is_test_block, draw_plus=False)
+        if is_test_block:
+            margin = 10
+            button_height = 40
+            button_width = (test_area_width - 4 * margin) / 3  # Equal gaps around and between buttons
+
+            copy_button, reset_button, submit_button = draw_matrices_and_buttons(block_rect, margin, button_height,
+                                                                                 button_width, pre_matrix,
+                                                                                 post_matrix, index=block_index,
+                                                                                 draw_plus=False)
+
+            test_buttons.append((copy_button, block_index, COPY_ACTION))
+            test_buttons.append((reset_button, block_index, RESET_ACTION))
+            test_buttons.append((submit_button, block_index, SUBMIT_ACTION))
+        else:
+            draw_matrices_block(pre_matrix, post_matrix, block_rect, index=None, is_test_block=is_test_block, draw_plus=False)
 
 def draw_bottom_status():
     bottom_status_rect = pygame.Rect(0, SCREEN_HEIGHT - BOTTOM_STATUS_HEIGHT, SCREEN_WIDTH, BOTTOM_STATUS_HEIGHT)
@@ -330,50 +354,29 @@ def draw_bottom_status():
     screen.blit(text, (10, SCREEN_HEIGHT - BOTTOM_STATUS_HEIGHT + 10))
 
 def update_page(delta):
-    global page_number, test_buttons
+    global page_number, test_buttons, max_min_buttons, post_grid_params
     page_number += delta
     if page_number < FIRST_PAGE:
         page_number = FIRST_PAGE
     elif page_number > LAST_PAGE:
         page_number = LAST_PAGE
     test_buttons = []
+    max_min_buttons = []
+    post_grid_params = []
 
 def go_to_first_page():
-    global page_number, test_buttons
+    global page_number, test_buttons, max_min_buttons, post_grid_params
     page_number = FIRST_PAGE
     test_buttons = []
+    max_min_buttons = []
+    post_grid_params = []
 
 def go_to_last_page():
-    global page_number, test_buttons
+    global page_number, test_buttons, max_min_buttons, post_grid_params
     page_number = LAST_PAGE
     test_buttons = []
-
-
-def handle_event(event, pos):
-    global selected_color, start_x, start_y, cell_size, gap
-
-    if event.type == pygame.MOUSEBUTTONDOWN:
-        if double_left_button.collidepoint(pos):
-            return FIRST_PAGE
-        elif left_button.collidepoint(pos):
-            return page_number - 1
-        elif right_button.collidepoint(pos):
-            return page_number + 1
-        elif double_right_button.collidepoint(pos):
-            return LAST_PAGE
-
-        handle_color_selection(pos)
-
-        for button, index, action in test_buttons:
-            if button.collidepoint(pos):
-                if action in [COPY_ACTION, RESET_ACTION, SUBMIT_ACTION]:
-                    handle_button_click(index, action)
-                    test_buttons.clear()
-                # elif action == MAXIMIZE_ACTION:
-                #     maximize_block((block_rect, True, page_number - 1, index))
-                # elif action == MINIMIZE_ACTION:
-                #     minimize_block()
-                break  # Only handle one button click per event
+    max_min_buttons = []
+    post_grid_params = []
 
 def handle_button_click(pos, test_block_index, action):
     """ Handle button click actions for copy, reset, and submit """
@@ -393,6 +396,8 @@ def handle_button_click(pos, test_block_index, action):
 
 # Global list to track button positions and actions
 test_buttons = []
+max_min_buttons = []
+post_grid_params = []
 
 # Main game loop
 running = True
@@ -416,6 +421,22 @@ while running:
                 if button.collidepoint(pos):
                     handle_button_click(pos, index, action)
                     break  # Only handle one button click per event
+
+            for max_min_button, action, is_test_block, page, block_index in max_min_buttons:
+                if max_min_button.collidepoint(pos):
+                    if action == MAXIMIZE_ACTION:
+                        maximize_block((is_test_block, page, block_index))
+                    elif action == MINIMIZE_ACTION:
+                        minimize_block()
+                    break
+
+            for post_matrix, post_rect, gap in post_grid_params:
+                if post_rect.collidepoint(pos):
+                    paint_post_grid(post_matrix, post_rect, pos, gap)
+                break
+
+            handle_color_selection(pos)
+
 
     # Clear the screen
     screen.fill(WHITE)
