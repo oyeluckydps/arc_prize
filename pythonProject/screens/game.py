@@ -1,11 +1,14 @@
 from constants import Constants as C
 from utils.color import Color as Color
 from randomly_initialize import load_all_training_blocks, load_all_test_blocks
-from utils.grid import draw_matrices_and_buttons, draw_matrices_block
+from utils.grid import draw_matrices_and_buttons, draw_matrices_block, paint_post_grid
+import actions
 
 import pygame
 import math
 import inspect
+import time
+import sys
 
 def draw_top_menu():
     # print(f"The name of this function is {inspect.currentframe().f_code.co_name}")
@@ -30,8 +33,13 @@ def draw_top_menu():
     text = C.font.render(f'{C.page_number}/{C.LAST_PAGE}', True, Color.BLACK)
     C.screen.blit(text, text.get_rect(center=(page_counter_position, 28)).topleft)
 
+    # Draw double EXIT button
+    pygame.draw.rect(C.screen, Color.BLUE, C.exit_button)
+    C.screen.blit(C.small_font.render('EXIT', True, Color.WHITE), (C.exit_button.x + 5,
+                                                                   C.exit_button.y))
+
     # Draw color palette in 1*10 format with indices above
-    palette_start_x = C.SCREEN_WIDTH - (10 * Color.PALETTE_BLOCK_SIZE) - 20
+    palette_start_x = C.SCREEN_WIDTH - (10 * Color.PALETTE_BLOCK_SIZE) - 20 - 200
     palette_start_y = 10
     C.color_palette_rects.clear()
     for index in range(10):
@@ -141,3 +149,58 @@ def draw_bottom_status():
     text = C.font.render(C.status_message, True, Color.BLACK)
     C.screen.blit(text, (10, C.SCREEN_HEIGHT - C.BOTTOM_STATUS_HEIGHT + 10))
 
+def game_screen():
+    while C.scene == "game":
+        # print(f"{time.time()}: LOOP!")
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                C.scene = "EXIT"
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                # Check if top menu navigation buttons are clicked
+                if C.double_left_button.collidepoint(pos):
+                    actions.go_to_first_page()
+                elif C.left_button.collidepoint(pos):
+                    actions.update_page(-1)
+                elif C.right_button.collidepoint(pos):
+                    actions.update_page(1)
+                elif C.double_right_button.collidepoint(pos):
+                    actions.go_to_last_page()
+                elif C.exit_button.collidepoint(pos):
+                    C.scene = "intro"
+                    print("Transition from Game -> Intro")
+                    break
+                # Check if any test block buttons are clicked
+                for button, index, action in C.test_buttons:
+                    if button.collidepoint(pos):
+                        actions.handle_button_click(pos, index, action)
+                        break  # Only handle one button click per event
+
+                for max_min_button, action, is_test_block, page, block_index in C.max_min_buttons:
+                    if max_min_button.collidepoint(pos):
+                        if action == C.MAXIMIZE_ACTION:
+                            actions.maximize_block((is_test_block, page, block_index))
+                        elif action == C.MINIMIZE_ACTION:
+                            actions.minimize_block()
+                        break
+
+                for post_matrix, post_rect, gap in C.post_grid_params:
+                    if post_rect.collidepoint(pos):
+                        paint_post_grid(post_matrix, post_rect, pos, gap)
+                    break
+
+                Color.handle_color_selection(pos)
+
+
+        # Clear the screen
+        C.screen.fill(Color.WHITE)
+
+        # Draw the different areas
+        draw_top_menu()
+        draw_middle_play()
+        draw_bottom_status()
+
+        # Update the display
+        pygame.display.flip()
+
+    return

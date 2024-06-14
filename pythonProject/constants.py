@@ -5,6 +5,8 @@ class Constants():
     SCREEN_WIDTH = 1400
     SCREEN_HEIGHT = 700
 
+    scene = "intro"
+
     # Constants for dividing the screen
     TOP_MENU_HEIGHT = 50
     BOTTOM_STATUS_HEIGHT = 50
@@ -42,11 +44,14 @@ class Constants():
     # Button definitions
     ARROW_BUTTON_WIDTH = 50
     ARROW_BUTTON_HEIGHT = 30
+    EXIT_BUTTON_WIDTH = 100
+    EXIT_BUTTON_HEIGHT = 30
 
     double_left_button = pygame.Rect(10, 10, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT)
     left_button = pygame.Rect(70, 10, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT)
     right_button = pygame.Rect(280, 10, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT)
     double_right_button = pygame.Rect(340, 10, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT)
+    exit_button = pygame.Rect(SCREEN_WIDTH - 20 - 150, 10, EXIT_BUTTON_WIDTH, EXIT_BUTTON_HEIGHT)
 
     print("Called!")
     # Set up the game window

@@ -8,6 +8,7 @@ class Color():
     GRAY = (200, 200, 200)
     BLUE = (0, 0, 255)
     LIGHT_GRAY = (240, 240, 240)
+    RED = (255, 0, 0)
     BUTTON_COLOR = (100, 149, 237)  # Cornflower Blue
 
     # Color palette (9 distinguishable colors + BLACK)
