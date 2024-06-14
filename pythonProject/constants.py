@@ -1,11 +1,19 @@
 import pygame
 import inspect
+from pathlib import Path
+import glob
+
 class Constants():
     # Constants for the game window dimensions
     SCREEN_WIDTH = 1400
     SCREEN_HEIGHT = 700
 
+    # Multiple scenes in the same game.
     scene = "intro"
+
+    # Folder path for all challenges and solutions
+    SAMPLE_FOLDER_PATH = './processed_json'
+    working_set = None
 
     # Constants for dividing the screen
     TOP_MENU_HEIGHT = 50
@@ -53,8 +61,20 @@ class Constants():
     double_right_button = pygame.Rect(340, 10, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT)
     exit_button = pygame.Rect(SCREEN_WIDTH - 20 - 150, 10, EXIT_BUTTON_WIDTH, EXIT_BUTTON_HEIGHT)
 
-    print("Called!")
+    test_blocks_num = None
+    test_blocks_mats = None
+    train_blocks_num = None
+    train_blocks_mats = None
+
     # Set up the game window
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Game Layout Example")
+
+    @staticmethod
+    def set_pages():
+        folder_path = Path(Constants.SAMPLE_FOLDER_PATH) / Path(Constants.working_set)
+        pattern = str(folder_path / '[0-9][0-9][0-9]_*.json')
+        # Count files matching the pattern
+        matching_files = glob.glob(pattern)
+        Constants.LAST_PAGE = len(matching_files)-1
 

@@ -2,7 +2,7 @@ from constants import Constants as C
 import random
 import inspect
 
-def load_all_training_blocks():
+def load_all_training_blocks(page = None):
     """
     Using closure method to ensure that a new block_matrices is not generated everytime this matrix is called.
     :return: a new block_matrices on first call and same block_matrices on every subsequent call.
@@ -19,9 +19,12 @@ def load_all_training_blocks():
                 post_matrix = [[random.randint(0, 9) for _ in range(n)] for _ in range(n)]
                 page_matrix.append((pre_matrix, post_matrix))
             load_all_training_blocks.block_matrices.append(page_matrix)
-    return load_all_training_blocks.TRAINING_BLOCKS_COUNT, load_all_training_blocks.block_matrices
+    if page is None:
+        return load_all_training_blocks.TRAINING_BLOCKS_COUNT, load_all_training_blocks.block_matrices
+    else:
+        return load_all_training_blocks.TRAINING_BLOCKS_COUNT[page], load_all_training_blocks.block_matrices[page]
 
-def load_all_test_blocks():
+def load_all_test_blocks(page):
     """
     Using closure method to ensure that a new test_matrices_by_page is not generated everytime this matrix is called.
     :return: a new test_matrices_by_page on first call and same test_matrices_by_page on every subsequent call.
@@ -39,5 +42,8 @@ def load_all_test_blocks():
                 post_matrix = [[0 for _ in range(n)] for _ in range(n)]
                 page_test_matrices.append((pre_matrix, post_matrix))
             load_all_test_blocks.test_matrices_by_page.append(page_test_matrices)
-    return load_all_test_blocks.TEST_BLOCKS_COUNT, load_all_test_blocks.test_matrices_by_page
+    if page is None:
+        return load_all_test_blocks.TEST_BLOCKS_COUNT, load_all_test_blocks.test_matrices_by_page
+    else:
+        return load_all_test_blocks.TEST_BLOCKS_COUNT[page], load_all_test_blocks.test_matrices_by_page[page]
 

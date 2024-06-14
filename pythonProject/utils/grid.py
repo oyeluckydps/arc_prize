@@ -6,8 +6,8 @@ import pygame
 def paint_post_grid(post_matrix, post_rec, pos, gap):
     # print(f"The name of this function is {inspect.currentframe().f_code.co_name}")
     if C.paint_mode and C.selected_color is not None:
-        n = len(post_matrix)
-        cell_size = int(min((post_rec.width - (n - 1) * gap) / n, (post_rec.height - (n - 1) * gap) / n))
+        n, m = len(post_matrix), len(post_matrix[0])
+        cell_size = int(min((post_rec.width - (m - 1) * gap) / m, (post_rec.height - (n - 1) * gap) / n))
         start_x = post_rec.x
         start_y = post_rec.y
         j = int((pos[0] - start_x) // (cell_size + gap))
@@ -18,10 +18,10 @@ def paint_post_grid(post_matrix, post_rec, pos, gap):
 
 def draw_grids_in_block(matrix, start_x, start_y, block_width, block_height, gap = 1):
     # print(f"The name of this function is {inspect.currentframe().f_code.co_name}")
-    n = len(matrix)
-    cell_size = int(min((block_width - (n - 1) * gap) / n, (block_height - (n - 1) * gap) / n))
+    n, m = len(matrix), len(matrix[0])
+    cell_size = int(min((block_width - (m - 1) * gap) / m, (block_height - (n - 1) * gap) / n))
     for i in range(n):
-        for j in range(n):
+        for j in range(m):
             color = Color.COLOR_PALETTE[matrix[i][j]]
             cell_rect = pygame.Rect(start_x + j * (cell_size + gap), start_y + i * (cell_size + gap), cell_size,
                                      cell_size)
@@ -49,7 +49,7 @@ def draw_matrices_block(pre_matrix, post_matrix, block_rect, index, is_test_bloc
     draw_grids_in_block(pre_matrix, pre_rect.x, pre_rect.y, pre_rect.width, pre_rect.height, gap)
     draw_grids_in_block(post_matrix, post_rect.x, post_rect.y, post_rect.width, post_rect.height, gap)
 
-    if is_test_block:
+    if is_test_block and len(C.post_grid_params) == 0:
         C.post_grid_params.append((post_matrix, post_rect, gap))
 
     arrow_start = (post_rect.x - margin, post_rect.y + inner_height / 2)
@@ -65,12 +65,14 @@ def draw_matrices_block(pre_matrix, post_matrix, block_rect, index, is_test_bloc
                                                                                     block_rect.top + 10), 2)
         pygame.draw.line(C.screen, Color.BLACK, (block_rect.right - 10, block_rect.top + 5), (block_rect.right - 10,
                                                                                    block_rect.top + 15), 2)
-        C.max_min_buttons.append((maximize_rect, C.MAXIMIZE_ACTION, is_test_block, C.page_number-1, index))
+        if not (maximize_rect, C.MAXIMIZE_ACTION, is_test_block, C.page_number-1, index) in C.max_min_buttons:
+            C.max_min_buttons.append((maximize_rect, C.MAXIMIZE_ACTION, is_test_block, C.page_number-1, index))
     else:
         minimize_rect = pygame.Rect(block_rect.right - 20, block_rect.top, 20, 20)
         pygame.draw.line(C.screen, Color.BLACK, (block_rect.right - 15, block_rect.top + 5), (block_rect.right - 5,
                                                                                       block_rect.top + 5), 2)
-        C.max_min_buttons.append((minimize_rect, C.MINIMIZE_ACTION, is_test_block, C.page_number-1, index))
+        if not (minimize_rect, C.MINIMIZE_ACTION, is_test_block, C.page_number-1, index) in C.max_min_buttons:
+            C.max_min_buttons.append((minimize_rect, C.MINIMIZE_ACTION, is_test_block, C.page_number-1, index))
     return is_test_block, pre_rect, post_rect
 
 def draw_matrices_and_buttons(test_block_rect, margin, button_height, button_width, pre_matrix, post_matrix, index,

@@ -58,6 +58,7 @@ class SingleLinePrettyPrinter(pprint.PrettyPrinter):
 pp = SingleLinePrettyPrinter(width=180)
 
 def preprocess_samples(problem_name):
+    global pp
     challenges_detail = {
             'raw_file': RAW_JSON_DIR / Path(f"arc-agi_{problem_name.name}_challenges.json"),
             'processed_folder': PROCESSED_JSON_DIR / Path(f"{problem_name.name}_challenges/"),
@@ -98,11 +99,13 @@ def preprocess_samples(problem_name):
             summary['Max Train Size']
 
         with open(filepath, 'w') as file:
-            pp = SingleLinePrettyPrinter(width=180, stream=file)
-            pp.pprint(val)
+            all_challenges = pp.pformat(val)
+            all_challenges = all_challenges.replace("\'", "\"")
+            file.write(all_challenges)
     with open(challenges_detail['summary_file'], 'w') as file:
-        pp = SingleLinePrettyPrinter(width=180, stream=file)
-        pp.pprint(summary)
+        summ = pp.pformat(summary)
+        summ = summ.replace("\'", "\"")
+        file.write(summ)
 
 
     try:
@@ -131,17 +134,20 @@ def preprocess_samples(problem_name):
         summary['Max Test Size'] = max(grid_sizes) if max(grid_sizes) > summary['Max Test Size'] else \
             summary['Max Test Size']
         with open(filepath, 'w') as file:
-            pp = SingleLinePrettyPrinter(width=180, stream=file)
-            pp.pprint(val)
+            all_solutions = pp.pformat(val)
+            all_solutions = all_solutions.replace("\'", "\"")
+            file.write(all_solutions)
     with open(solutions_detail['summary_file'], 'w') as file:
-        pp = SingleLinePrettyPrinter(width=180, stream=file)
-        pp.pprint(summary)
+        summ = pp.pformat(summary)
+        summ = summ.replace("\'", "\"")
+        file.write(summ)
 
 
 
 if __name__ == "__main__":
+    # test_challenges_file = RAW_JSON_DIR/Path("arc-agi_evaluation_challenges.json")
     # with open(test_challenges_file) as f:
     #     training_challenges = json.load(f)
     # pp.pprint(training_challenges)
-    preprocess_samples(EVALUATION)
+    preprocess_samples(TRAINING)
     pass
