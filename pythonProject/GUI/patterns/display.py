@@ -1,8 +1,9 @@
 import pygame
+import math
 pygame.init()
 from ..constants import Constants as C
 from ..utils.color import Color
-from .utils import draw_patterns_in_area
+from .utils import draw_patterns_in_area, calculate_block_size
 
 def display_patterns(pre_patterns, post_patterns=None):
     """
@@ -17,6 +18,31 @@ def display_patterns(pre_patterns, post_patterns=None):
     # Set up the screen
     screen = pygame.display.set_mode((C.SCREEN_WIDTH, C.SCREEN_HEIGHT))
     pygame.display.set_caption("Pattern Display")
+    
+    # Calculate the number of columns and rows for the grid
+    num_pre_patterns = len(pre_patterns)
+    num_pre_columns = math.ceil(num_pre_patterns ** 0.5)
+    num_pre_rows = (num_pre_patterns + num_pre_columns - 1) // num_pre_columns
+    
+    if post_patterns:
+        num_post_patterns = len(post_patterns)
+        num_post_columns = math.ceil(num_post_patterns ** 0.5)
+        num_post_rows = (num_post_patterns + num_post_columns - 1) // num_post_columns
+    else:
+        num_post_patterns = 0
+        num_post_columns = 0
+        num_post_rows = 0
+    
+    # Calculate the size of each grid cell
+    cell_width = C.SCREEN_WIDTH // (num_pre_columns + num_post_columns)
+    cell_height = C.MIDDLE_PLAY_HEIGHT // max(num_pre_rows, num_post_rows)
+    margin = 10
+    gap = 1
+    
+    # Calculate the smallest block size for all patterns
+    min_block_size = calculate_block_size(pre_patterns, cell_width, cell_height, margin, gap)
+    if post_patterns:
+        min_block_size = min(min_block_size, calculate_block_size(post_patterns, cell_width, cell_height, margin, gap))
     
     # Main loop
     running = True
@@ -55,11 +81,11 @@ def display_patterns(pre_patterns, post_patterns=None):
             post_area_width = 0
         
         # Draw the pre_patterns in the PRE-AREA
-        draw_patterns_in_area(screen, pre_patterns, 0, pre_area_width, C.TOP_MENU_HEIGHT, C.MIDDLE_PLAY_HEIGHT)
+        draw_patterns_in_area(screen, pre_patterns, 0, pre_area_width, C.TOP_MENU_HEIGHT, C.MIDDLE_PLAY_HEIGHT, min_block_size)
         
         # Draw the post_patterns in the POST-AREA
         if post_patterns:
-            draw_patterns_in_area(screen, post_patterns, pre_area_width, post_area_width, C.TOP_MENU_HEIGHT, C.MIDDLE_PLAY_HEIGHT)
+            draw_patterns_in_area(screen, post_patterns, pre_area_width, post_area_width, C.TOP_MENU_HEIGHT, C.MIDDLE_PLAY_HEIGHT, min_block_size)
         
         # Update the display
         pygame.display.flip()
