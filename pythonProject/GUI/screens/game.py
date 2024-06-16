@@ -1,15 +1,13 @@
-from constants import Constants as C
-from utils.color import Color as Color
+from ..constants import Constants as C
+from ..utils.color import Color as Color
 # from randomly_initialize import load_all_training_blocks, load_all_test_blocks
-from data_initialize import load_all_training_blocks, load_all_test_blocks
-from utils.grid import draw_matrices_and_buttons, draw_matrices_block, paint_post_grid
-import actions
+from ..data_initialize import load_all_training_blocks, load_all_test_blocks
+from ..utils.grid import draw_matrices_and_buttons, draw_matrices_block, paint_post_grid
+from .. import actions
 
 import pygame
 import math
-import inspect
-import time
-import sys
+
 
 def draw_top_menu():
     # print(f"The name of this function is {inspect.currentframe().f_code.co_name}")

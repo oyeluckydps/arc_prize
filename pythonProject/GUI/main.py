@@ -3,12 +3,12 @@ import sys
 # Initialize Pygame
 pygame.init()
 
-from constants import Constants as C
-from screens.game import game_screen
-from screens.intro import intro_screen
+from .constants import Constants as C
+from .screens.game import game_screen
+from .screens.intro import intro_screen
 
 # Main game loop
-if __name__ == "__main__":
+def main():
     while C.scene != "EXIT":
         print(f"{C.scene=}")
         if C.scene == "intro":

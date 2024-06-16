@@ -12,7 +12,7 @@ class Constants():
     scene = "intro"
 
     # Folder path for all challenges and solutions
-    SAMPLE_FOLDER_PATH = './processed_json'
+    SAMPLE_FOLDER_PATH = 'processed_json'
     working_set = None
 
     # Constants for dividing the screen

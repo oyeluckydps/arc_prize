@@ -1,6 +1,5 @@
-from constants import Constants as C
-from utils.color import Color as Color
-import inspect
+from ..constants import Constants as C
+from ..utils.color import Color as Color
 import pygame
 
 def paint_post_grid(post_matrix, post_rec, pos, gap):

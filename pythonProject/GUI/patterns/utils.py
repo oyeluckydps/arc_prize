@@ -86,7 +86,12 @@ def draw_patterns_in_area(screen, patterns, start_x, area_width, start_y, area_h
                     if px == min_x + x and py == min_y + y:
                         color_rgb = Color.COLOR_PALETTE[color]
                         break
-                pygame.draw.rect(screen, color_rgb, (cell_x + start_x_offset + x * (block_size + gap), cell_y + start_y_offset + y * (block_size + gap), block_size, block_size))
+                # If you notice then cell_x and start_x_offset are pygame pixel terms that refer x to be horizontal
+                # while the x is the matrix term and it denotes the row number of the matrix so it is the vertical
+                # count of the cells. Hence, we need to adjuct the formula carefully.
+                pygame.draw.rect(screen, color_rgb, (cell_x + start_x_offset + y * (block_size + gap),
+                                                     cell_y + start_y_offset + x * (block_size + gap), block_size,
+                                                     block_size))
         
         if pattern:
             first_cell = pattern[0]

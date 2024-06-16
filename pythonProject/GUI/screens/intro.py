@@ -1,5 +1,5 @@
-from constants import Constants as C
-from utils.color import Color as Color
+from ..constants import Constants as C
+from ..utils.color import Color as Color
 from pathlib import Path
 import pygame
 

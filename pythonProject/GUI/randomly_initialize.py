@@ -1,4 +1,4 @@
-from constants import Constants as C
+from .constants import Constants as C
 import random
 import inspect
 

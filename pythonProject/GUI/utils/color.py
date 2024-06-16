@@ -1,5 +1,4 @@
-from constants import Constants as C
-import inspect
+from ..constants import Constants as C
 
 class Color():
     # Define colors

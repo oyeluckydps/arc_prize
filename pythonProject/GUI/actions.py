@@ -1,6 +1,6 @@
-from constants import Constants as C
+from .constants import Constants as C
 # from randomly_initialize import load_all_test_blocks
-from data_initialize import check_solution
+from .data_initialize import check_solution
 import inspect
 
 def reset_states():

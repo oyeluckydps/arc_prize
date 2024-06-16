@@ -1,35 +1,9 @@
-import pygame
-pygame.init()
-from constants import Constants as C
-import random
+# import pygame
+# pygame.init()
+from .constants import Constants as C
+from utils.file_handling import load_json_by_page
 import inspect
 from pathlib import Path
-import json
-import glob
-
-def load_json_by_page(folder, page_number):
-    """
-    Loads the JSON file corresponding to the given page number.
-    The file name should be in the format 'XXX_*.json' where XXX is the zero-padded page number.
-    """
-    # Ensure the page number is zero-padded to three digits
-    padded_page_number = f'{page_number:03d}'
-    pattern = f"{padded_page_number}_*.json"
-
-    # Using pathlib with glob to find the correct file
-    json_file_path = None
-    for file in Path(folder).glob(pattern):
-        json_file_path = file
-        break  # We take the first match
-
-    print(json_file_path)
-    if json_file_path:
-        with open(json_file_path, 'r') as json_file:
-            data = json.load(json_file)
-            return data
-    else:
-        print(f"No file found for page number {page_number}")
-        return None
 
 def load_all_training_blocks(page):
     """
@@ -91,10 +65,10 @@ def check_solution(page, index, provided_sol):
     return (actual_sol == provided_sol, actual_sol)
 
 
-if __name__ == "__main__":
-    # C.working_set = "evaluation_challenges"
-    # C.working_set = "test_challenges"
-    C.working_set = "training_challenges"
-    num, mats = load_all_training_blocks(page = 35)
-    num_test, mats_test = load_all_test_blocks(page=35)
-    pass
+# if __name__ == "__main__":
+#     # C.working_set = "evaluation_challenges"
+#     # C.working_set = "test_challenges"
+#     C.working_set = "training_challenges"
+#     num, mats = load_all_training_blocks(page = 35)
+#     num_test, mats_test = load_all_test_blocks(page=35)
+#     pass
