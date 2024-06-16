@@ -76,6 +76,8 @@ def display_patterns(pre_patterns, post_patterns=None):
         if post_patterns:
             pre_area_width = C.SCREEN_WIDTH // 2
             post_area_width = C.SCREEN_WIDTH - pre_area_width
+            # Draw the separator
+            pygame.draw.line(screen, Color.BLACK, (pre_area_width, C.TOP_MENU_HEIGHT), (pre_area_width, C.SCREEN_HEIGHT - C.BOTTOM_STATUS_HEIGHT), 5)
         else:
             pre_area_width = C.SCREEN_WIDTH
             post_area_width = 0
@@ -91,3 +93,4 @@ def display_patterns(pre_patterns, post_patterns=None):
         pygame.display.flip()
     
     pygame.quit()
+

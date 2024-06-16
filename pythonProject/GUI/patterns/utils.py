@@ -91,4 +91,4 @@ def draw_patterns_in_area(screen, patterns, start_x, area_width, start_y, area_h
         if pattern:
             first_cell = pattern[0]
             text_surface = C.very_small_font.render(f"({first_cell[0]}, {first_cell[1]})", True, Color.BLACK)
-            screen.blit(text_surface, (cell_x + start_x_offset, cell_y + cell_height - margin))
+            screen.blit(text_surface, (cell_x + start_x_offset, cell_y + start_y_offset + num_rows_in_pattern * (block_size + gap)))
