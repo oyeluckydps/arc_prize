@@ -24,6 +24,7 @@ def display_patterns(patterns):
     # Calculate the size of each grid cell
     cell_width = C.SCREEN_WIDTH // num_columns
     cell_height = C.MIDDLE_PLAY_HEIGHT // num_rows
+    margin = 10
     
     # Main loop
     running = True
@@ -53,16 +54,28 @@ def display_patterns(patterns):
             cell_x = col * cell_width
             cell_y = row * cell_height + C.TOP_MENU_HEIGHT
             
+            # Calculate the size of each block in the pattern
+            if pattern:
+                max_x = max(x for x, y, color in pattern)
+                min_x = min(x for x, y, color in pattern)
+                max_y = max(y for x, y, color in pattern)
+                min_y = min(y for x, y, color in pattern)
+                
+                num_rows_in_pattern = max_x - min_x + 1
+                num_cols_in_pattern = max_y - min_y + 1
+                
+                block_size = min((cell_height - margin) // num_rows_in_pattern, (cell_width - margin) // num_cols_in_pattern)
+            
             # Draw the pattern inside the grid cell
             for (x, y, color) in pattern:
                 color_rgb = Color.COLOR_PALETTE[color]
-                pygame.draw.rect(screen, color_rgb, (cell_x + x * C.PALETTE_BLOCK_SIZE, cell_y + y * C.PALETTE_BLOCK_SIZE, C.PALETTE_BLOCK_SIZE, C.PALETTE_BLOCK_SIZE))
+                pygame.draw.rect(screen, color_rgb, (cell_x + (x - min_x) * block_size, cell_y + (y - min_y) * block_size, block_size, block_size))
             
             # Write the location of the first cell below the pattern
             if pattern:
                 first_cell = pattern[0]
                 text_surface = C.very_small_font.render(f"({first_cell[0]}, {first_cell[1]})", True, Color.BLACK)
-                screen.blit(text_surface, (cell_x, cell_y + cell_height - C.PALETTE_BLOCK_SIZE))
+                screen.blit(text_surface, (cell_x, cell_y + cell_height - margin))
         
         # Update the display
         pygame.display.flip()
