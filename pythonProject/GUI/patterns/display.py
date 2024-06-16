@@ -25,6 +25,7 @@ def display_patterns(patterns):
     cell_width = C.SCREEN_WIDTH // num_columns
     cell_height = C.MIDDLE_PLAY_HEIGHT // num_rows
     margin = 10
+    gap = 1
     
     # Main loop
     running = True
@@ -32,6 +33,9 @@ def display_patterns(patterns):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if C.exit_button.collidepoint(event.pos):
+                    running = False
         
         # Fill the screen with a background color
         screen.fill(Color.WHITE)
@@ -45,6 +49,11 @@ def display_patterns(patterns):
         # Draw the middle play area
         play_area_rect = pygame.Rect(0, C.TOP_MENU_HEIGHT, C.SCREEN_WIDTH, C.MIDDLE_PLAY_HEIGHT)
         pygame.draw.rect(screen, Color.LIGHT_GRAY, play_area_rect)
+        
+        # Draw the exit button
+        pygame.draw.rect(screen, Color.BUTTON_COLOR, C.exit_button)
+        exit_text = C.button_font.render("Exit", True, Color.WHITE)
+        screen.blit(exit_text, (C.exit_button.x + 10, C.exit_button.y + 5))
         
         # Display the patterns in the middle play area
         for index, pattern in enumerate(patterns):
@@ -64,12 +73,18 @@ def display_patterns(patterns):
                 num_rows_in_pattern = max_x - min_x + 1
                 num_cols_in_pattern = max_y - min_y + 1
                 
-                block_size = min((cell_height - margin) // num_rows_in_pattern, (cell_width - margin) // num_cols_in_pattern)
+                block_size = min((cell_height - margin - (num_rows_in_pattern - 1) * gap) // num_rows_in_pattern, 
+                                 (cell_width - margin - (num_cols_in_pattern - 1) * gap) // num_cols_in_pattern)
             
             # Draw the pattern inside the grid cell
-            for (x, y, color) in pattern:
-                color_rgb = Color.COLOR_PALETTE[color]
-                pygame.draw.rect(screen, color_rgb, (cell_x + (x - min_x) * block_size, cell_y + (y - min_y) * block_size, block_size, block_size))
+            for x in range(num_rows_in_pattern):
+                for y in range(num_cols_in_pattern):
+                    color_rgb = Color.BLACK  # Default color for non-pattern cells
+                    for (px, py, color) in pattern:
+                        if px == min_x + x and py == min_y + y:
+                            color_rgb = Color.COLOR_PALETTE[color]
+                            break
+                    pygame.draw.rect(screen, color_rgb, (cell_x + x * (block_size + gap), cell_y + y * (block_size + gap), block_size, block_size))
             
             # Write the location of the first cell below the pattern
             if pattern:
