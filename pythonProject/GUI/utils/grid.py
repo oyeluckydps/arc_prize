@@ -32,6 +32,15 @@ def draw_matrices_block(pre_matrix, post_matrix, block_rect, index, is_test_bloc
     margin = 10
     button_height = 40 if is_test_block else 0
 
+    input_text = (f"{'Test' if is_test_block else 'Train'} - {index}: Input ({len(pre_matrix)}"
+                  f"*{len(pre_matrix[0])})")
+    output_text = (f"{'Test' if is_test_block else 'Train'} - {index}: Output ({len(post_matrix)}*"
+                  f"{len(post_matrix[0])})")
+    input_text_rendered = C.very_small_font.render(input_text, True, Color.BLACK)
+    output_text_rendered = C.very_small_font.render(output_text, True, Color.BLACK)
+    C.screen.blit(input_text_rendered, (block_rect.x + 10, block_rect.y + 5))
+    C.screen.blit(output_text_rendered, (block_rect.x + 10 + block_rect.width/2, block_rect.y + 5))
+
     max_grid_size = min(block_rect.width / 2 - 1.5 * margin, block_rect.height - 3 * margin - button_height)
     inner_height = inner_width = max_grid_size
 

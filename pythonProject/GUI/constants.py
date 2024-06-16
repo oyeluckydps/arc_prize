@@ -45,6 +45,7 @@ class Constants():
     # Initialize fonts
     font = pygame.font.Font(None, 36)
     small_font = pygame.font.Font(None, 30)
+    medium_font = pygame.font.Font(None, 20)
     very_small_font = pygame.font.Font(None, 18)
     matrix_font = pygame.font.Font(None, 14)
     button_font = pygame.font.Font(None, 28)

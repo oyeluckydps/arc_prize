@@ -8,8 +8,6 @@ from screens.game import game_screen
 from screens.intro import intro_screen
 
 # Main game loop
-
-
 if __name__ == "__main__":
     while C.scene != "EXIT":
         print(f"{C.scene=}")
@@ -19,3 +17,5 @@ if __name__ == "__main__":
             game_screen()
     pygame.quit()
     sys.exit()
+
+
