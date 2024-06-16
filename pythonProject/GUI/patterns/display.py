@@ -94,3 +94,87 @@ def display_patterns(pre_patterns, post_patterns=None):
     
     pygame.quit()
 
+def display_patterns_list(patterns_list):
+    """
+    Display patterns from a list of PRE and POST patterns on a Pygame screen with navigation buttons.
+    
+    Parameters:
+    patterns_list (list): A list of tuples, where each tuple contains a list of PRE patterns and a list of POST patterns.
+    """
+    current_index = 0
+    total_patterns = len(patterns_list)
+    
+    def update_display():
+        pre_patterns, post_patterns = patterns_list[current_index]
+        display_patterns(pre_patterns, post_patterns)
+    
+    # Set up the screen
+    screen = pygame.display.set_mode((C.SCREEN_WIDTH, C.SCREEN_HEIGHT))
+    pygame.display.set_caption("Pattern Display")
+    
+    # Main loop
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if C.exit_button.collidepoint(event.pos):
+                    running = False
+                elif C.left_button.collidepoint(event.pos):
+                    current_index = max(0, current_index - 1)
+                    update_display()
+                elif C.right_button.collidepoint(event.pos):
+                    current_index = min(total_patterns - 1, current_index + 1)
+                    update_display()
+                elif C.double_left_button.collidepoint(event.pos):
+                    current_index = 0
+                    update_display()
+                elif C.double_right_button.collidepoint(event.pos):
+                    current_index = total_patterns - 1
+                    update_display()
+        
+        # Fill the screen with a background color
+        screen.fill(Color.WHITE)
+        
+        # Draw the top menu
+        pygame.draw.rect(screen, Color.GRAY, (0, 0, C.SCREEN_WIDTH, C.TOP_MENU_HEIGHT))
+        
+        # Draw the bottom status area
+        pygame.draw.rect(screen, Color.GRAY, (0, C.SCREEN_HEIGHT - C.BOTTOM_STATUS_HEIGHT, C.SCREEN_WIDTH, C.BOTTOM_STATUS_HEIGHT))
+        
+        # Draw the middle play area
+        play_area_rect = pygame.Rect(0, C.TOP_MENU_HEIGHT, C.SCREEN_WIDTH, C.MIDDLE_PLAY_HEIGHT)
+        pygame.draw.rect(screen, Color.LIGHT_GRAY, play_area_rect)
+        
+        # Draw the exit button
+        pygame.draw.rect(screen, Color.BUTTON_COLOR, C.exit_button)
+        exit_text = C.button_font.render("Exit", True, Color.WHITE)
+        screen.blit(exit_text, (C.exit_button.x + 10, C.exit_button.y + 5))
+        
+        # Draw navigation buttons
+        pygame.draw.rect(screen, Color.BUTTON_COLOR, C.double_left_button)
+        double_left_text = C.button_font.render("<<", True, Color.WHITE)
+        screen.blit(double_left_text, (C.double_left_button.x + 10, C.double_left_button.y + 5))
+        
+        pygame.draw.rect(screen, Color.BUTTON_COLOR, C.left_button)
+        left_text = C.button_font.render("<", True, Color.WHITE)
+        screen.blit(left_text, (C.left_button.x + 10, C.left_button.y + 5))
+        
+        pygame.draw.rect(screen, Color.BUTTON_COLOR, C.right_button)
+        right_text = C.button_font.render(">", True, Color.WHITE)
+        screen.blit(right_text, (C.right_button.x + 10, C.right_button.y + 5))
+        
+        pygame.draw.rect(screen, Color.BUTTON_COLOR, C.double_right_button)
+        double_right_text = C.button_font.render(">>", True, Color.WHITE)
+        screen.blit(double_right_text, (C.double_right_button.x + 10, C.double_right_button.y + 5))
+        
+        # Draw the current index and total patterns
+        index_text = C.button_font.render(f"{current_index + 1}/{total_patterns}", True, Color.BLACK)
+        screen.blit(index_text, (C.left_button.x + C.left_button.width + 10, C.left_button.y + 5))
+        
+        # Update the display
+        pygame.display.flip()
+    
+    pygame.quit()
+
