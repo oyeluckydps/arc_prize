@@ -6,7 +6,7 @@ import os
 
 CWD = Path(os.getcwd())
 
-RAW_JSON_DIR = Path("../samples/")
+RAW_JSON_DIR = Path("samples/")
 PROCESSED_JSON_DIR = Path("processed_json/")
 
 Problem_Setup_details = namedtuple('ProblemType', ['name'])
