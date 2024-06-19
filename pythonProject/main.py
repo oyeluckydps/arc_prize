@@ -1,14 +1,14 @@
 from pathlib import Path
 from utils.file_handling import load_json_by_page
-from conversions.matrix_handling import list_to_matrix
-from pattern.segregation import input_based
+from logic.conversions.matrix_handling import list_to_matrix
+from logic.pattern.segregation import input_based
 from GUI.patterns.display import display_patterns_list
 def main():
     # Define the path to the folder
     folder_path = Path("processed_json/evaluation_challenges/")
     
     # Call the function from data_initialize.py for page number 3
-    result = load_json_by_page(folder=folder_path, page_number=25)
+    result = load_json_by_page(folder=folder_path, page_number=13)
 
     train_inputs = [list_to_matrix(elem['input']) for elem in result['train']]
     train_outputs = [list_to_matrix(elem['output']) for elem in result['train']]
