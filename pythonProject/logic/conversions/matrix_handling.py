@@ -9,7 +9,6 @@ def list_to_matrix(list_of_lists):
         print(f"Error converting list of lists to matrix: {e}")
         return None
 
-
 def matrix_to_list(matrix):
     try:
         list_of_lists = matrix.tolist()
@@ -19,5 +18,3 @@ def matrix_to_list(matrix):
     except ValueError as e:
         print(f"Error converting matrix to list of lists: {e}")
         return None
-
-
