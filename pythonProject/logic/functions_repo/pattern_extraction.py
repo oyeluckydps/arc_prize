@@ -38,19 +38,4 @@ class patternExtraction(functionRepo):
         else:
             raise NotImplementedError("Method not implemented")
 
-    def iter(self):
-        """
-        Iterates over the extracted patterns.
-
-        Yields:
-            Pattern: The next pattern in the list.
-
-        Raises:
-            NotImplementedError: If the method is not implemented.
-        """
-        if self.method:
-            for pattern in self.method():
-                yield pattern
-        else:
-            raise NotImplementedError("Method not implemented")
 
