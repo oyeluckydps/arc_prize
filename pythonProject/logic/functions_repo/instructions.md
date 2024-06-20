@@ -1,4 +1,4 @@
-var WORKING_FOLDER = "./pattern_extraction_repo/"
+var WORKING_FOLDER = "./pattern_transformation_repo/"
 
 # 1 - INSTRUCTION FOR AGENT
 
@@ -10,10 +10,11 @@ var WORKING_FOLDER = "./pattern_extraction_repo/"
 
 # 2 - INSTRUCTION FOR THE JOB
 
-1. Create a new file named chromatic_segregation.py in the pattern_extraction_repo folder. Put a function with the same name in it. The function takes a grid and optionally a color betweeen 0 and 9 as input. Your job is is iterate over cells of grid and pick only those that belong to the input color. Create a pattern by collecting these cells that adhere to a color and return a list having that one pattern. However, if color is not provided, then iterate over all colors from 0 to 9 and create a pattern for each color, then put these patterns in a list and return it.
+1. Create an __init__ file in pattern_transformation_repo folder.
+2. Create a new file named trim_to_arena and make a function of same name in it. The function should take a pattern as input and return a pattern as output. It should remove all the cells outside the arena from the pattern. The height and width of arena is optionally provided to the function. If the height and width are not provided, the function should import it from module named ENV_PARAMS in logic folder. So, width = ENV_PARAMS.width and height = ENV_PARAMS.height. Any cell in the input pattern that has x or y below 0 or above or equal to width or height should be removed from the pattern. Return the pattern after trimming of these cells.
 
 # 3 - CONCLUDING INSTRUCTIONS
 
-
-1. update the summary of changes made in the WORKING_FOLDER/SUMMARY.md file.
+1. Add comment whereever required. Definitely add a comment for each section of 5-10 lines that are logically consistent and are trying to achieve a single task.
+2. update the summary of changes made in the WORKING_FOLDER/SUMMARY.md file.
 

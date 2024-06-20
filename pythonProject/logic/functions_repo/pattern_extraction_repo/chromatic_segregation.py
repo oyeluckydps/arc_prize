@@ -27,3 +27,4 @@ def chromatic_segregation(grid: Grid, color: Optional[int] = None) -> List[Patte
             cells = [cell for cell in grid.cells if cell.color == col]
             patterns.append(Pattern(cells))
     return patterns
+
