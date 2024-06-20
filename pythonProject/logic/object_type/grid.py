@@ -4,6 +4,7 @@ class Grid:
     def __init__(self, cells, probability=0.0):
         self.cells = set(cells)
         self.probability = probability
+        self.properties = [self.get_cell_count]
         self.validate_grid()
 
     def validate_grid(self):
@@ -20,6 +21,9 @@ class Grid:
 
     def __repr__(self):
         return f"Grid(cells={list(self.cells)}, probability={self.probability})"
+
+    def get_cell_count(self):
+        return len(self.cells)
 
     def get_properties(self):
         return {

@@ -9,7 +9,7 @@
 2. **Inheritance and Properties**
     - Implement inheritance for the classes where applicable.
     - Add a probability field to each class.
-    - Add a field for properties applicable to each class.
+    - Add a field for properties applicable to each class. Replace the `get_properties` method with a `properties` member that is a list of methods/functions.
 
 3. **Type Casting and Reduction Functions**
     - Provide type casting functions to cast a class to its higher abstraction level.

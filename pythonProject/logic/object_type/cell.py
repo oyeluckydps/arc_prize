@@ -4,9 +4,22 @@ class Cell:
         self.y = y
         self.color = color
         self.probability = probability
+        self.properties = [self.get_x, self.get_y, self.get_color]
 
     def __repr__(self):
         return f"Cell(x={self.x}, y={self.y}, color={self.color}, probability={self.probability})"
+
+    def get_x(self):
+        return self.x
+
+    def get_y(self):
+        return self.y
+
+    def get_color(self):
+        return self.color
+
+    def to_pattern(self):
+        return Pattern([self], self.probability)
 
     def get_properties(self):
         return {
@@ -14,8 +27,3 @@ class Cell:
             "y": self.y,
             "color": self.color
         }
-
-    def to_pattern(self):
-        return Pattern([self], self.probability)
-
-
