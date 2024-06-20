@@ -9,11 +9,10 @@ class Constellation:
     def __repr__(self):
         return f"Constellation(supergroups={list(self.supergroups)}, probability={self.probability})"
 
-    def get_supergroup_count(self):
-        return len(self.supergroups)
-
     def reduce(self):
         if len(self.supergroups) == 1:
             supergroup = next(iter(self.supergroups))
             return supergroup.reduce()
         return self
+
+    

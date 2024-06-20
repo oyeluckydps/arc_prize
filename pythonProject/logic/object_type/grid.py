@@ -22,10 +22,7 @@ class Grid:
     def __repr__(self):
         return f"Grid(cells={list(self.cells)}, probability={self.probability})"
 
-    def get_cell_count(self):
-        return len(self.cells)
+    def get_dimensions(self):
+        return max(cell.x for cell in self.cells), max(cell.y for cell in self.cells)
 
-    def get_properties(self):
-        return {
-            "cell_count": len(self.cells)
-        }
+    

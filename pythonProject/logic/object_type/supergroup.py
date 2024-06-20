@@ -1,4 +1,4 @@
-from .group import Group
+from .constellation import Constellation
 
 class SuperGroup:
     def __init__(self, groups, probability=0.0):
@@ -12,7 +12,7 @@ class SuperGroup:
     def get_group_count(self):
         return len(self.groups)
 
-    def to_constellation(self):
+    def to_higher_order(self):
         return Constellation([self], self.probability)
 
     def reduce(self):

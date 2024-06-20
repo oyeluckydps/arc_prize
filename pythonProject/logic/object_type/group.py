@@ -1,4 +1,5 @@
 from .pattern import Pattern
+from .supergroup import SuperGroup
 
 class Group:
     def __init__(self, patterns, probability=0.0):
@@ -9,10 +10,7 @@ class Group:
     def __repr__(self):
         return f"Group(patterns={list(self.patterns)}, probability={self.probability})"
 
-    def get_pattern_count(self):
-        return len(self.patterns)
-
-    def to_supergroup(self):
+    def to_higher_order(self):
         return SuperGroup([self], self.probability)
 
     def reduce(self):
@@ -22,3 +20,4 @@ class Group:
         return self
 
 
+    

@@ -1,4 +1,5 @@
 from .cell import Cell
+from .group import Group
 
 class Pattern:
     def __init__(self, cells, probability=0.0):
@@ -9,10 +10,7 @@ class Pattern:
     def __repr__(self):
         return f"Pattern(cells={list(self.cells)}, probability={self.probability})"
 
-    def get_cell_count(self):
-        return len(self.cells)
-
-    def to_group(self):
+    def to_higher_order(self):
         return Group([self], self.probability)
 
     def reduce(self):
