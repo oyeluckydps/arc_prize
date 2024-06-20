@@ -4,8 +4,8 @@ from a grid based on the specified color or all colors from 0 to 9.
 """
 
 from typing import List, Optional
-from ..object_type.grid import Grid
-from ..object_type.pattern import Pattern
+from ...object_type.grid import Grid
+from ...object_type.pattern import Pattern
 
 def chromatic_segregation(grid: Grid, color: Optional[int] = None) -> List[Pattern]:
     """
@@ -21,11 +21,9 @@ def chromatic_segregation(grid: Grid, color: Optional[int] = None) -> List[Patte
     patterns = []
     if color is not None:
         cells = [cell for cell in grid.cells if cell.color == color]
-        if cells:
-            patterns.append(Pattern(cells))
+        patterns.append(Pattern(cells))
     else:
         for col in range(10):
             cells = [cell for cell in grid.cells if cell.color == col]
-            if cells:
-                patterns.append(Pattern(cells))
+            patterns.append(Pattern(cells))
     return patterns
