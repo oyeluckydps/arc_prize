@@ -9,9 +9,18 @@
 
 # 2 - INSTRUCTION FOR THE JOB
 
-1. Create a new file and add an abstract class named `functionRepo`.
-2. For each new class, create a new file. Do not use existing files.
-2. Create the following classes derived from `functionRepo`: `cell_transformation`, `cell_expansion`, `pattern_contraction`, `pattern_transformation`, `pattern_extraction`, `pattern_expansion`, `group_contraction`, `group_transformation`, `group_extraction`, `group_expansion`.
+1. Create a new file `function_repo.py` and add an abstract class named `functionRepo`.
+2. Create the following classes derived from `functionRepo` in separate files:
+   - `cell_transformation.py`: `cellTransformation`
+   - `cell_expansion.py`: `cellExpansion`
+   - `pattern_contraction.py`: `patternContraction`
+   - `pattern_transformation.py`: `patternTransformation`
+   - `pattern_extraction.py`: `patternExtraction`
+   - `pattern_expansion.py`: `patternExpansion`
+   - `group_contraction.py`: `groupContraction`
+   - `group_transformation.py`: `groupTransformation`
+   - `group_extraction.py`: `groupExtraction`
+   - `group_expansion.py`: `groupExpansion`
 3. Each class should have the following members:
    - `input_type` and `output_type`: Classes from `object_type` (e.g., `Cell`, `Pattern`, `Grid`, `Constellation`).
    - `method`: A pointer to a function. The method is not a function so do not define it. Initiate it with None if not provided in init.
@@ -32,3 +41,10 @@
 6. Import proper classes from ../object_type/ as required. For example when Grid is requried, use from ../object_type/grid import Grid.
 
 # 3 - CONCLUDING INSTRUCTIONS
+
+1. Ensure all files are saved and committed to the repository.
+2. Verify that all classes and methods are properly documented.
+3. Ensure that all code follows PEP8 standards.
+4. Run any necessary tests to ensure the new classes work as expected.
+5. Update any relevant documentation to reflect the changes made.
+
