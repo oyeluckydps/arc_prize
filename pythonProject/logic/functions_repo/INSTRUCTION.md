@@ -1,0 +1,1 @@
+Removing the `execute` function from the `patternExpansion` and `groupContraction` classes has been completed.
