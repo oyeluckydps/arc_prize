@@ -1,4 +1,4 @@
-var WORKING_FILE = ["./screens/game.py@draw_bottom_status", "./.constants.py@Constants"]
+var WORKING_FILE = "./actions/"
 
 The WORKING_FILE define the file@function that the agent should work on.
 The WORKING_FOLDER defines the folder that the agent should work on.
@@ -17,7 +17,10 @@ The agent should ONLY make changes to the files in WORKING_FOLDER or the WORKING
 # 2 - INSTRUCTION FOR THE JOB
 
 1. Add a new button called SNAPSHOT to the bottom of the game screen in the status bar on the right corner.
-2. Write a function that takes a screenshot of the complete game screen and saves it in the ./snapshots/total_page/<working_set>/<page_number>/ folder. Create the folder if it doesn't exist. Use the Path library from the pathlib module to create the folder.
+2. Write a new function in WORKING_FILE that maximizes each train grids one after another and takes a snapshot of only the input grid first and the output grid then. This should happen iteratively for all the train blocks and then the test blocks. After taking the snapshot save the images in the ./snapshots/<working_set>/<page_number>/<test or train>_<index>_<input or output>.jpg file. Create the folder if it doesn't exist. Use the Path library from the pathlib module to create the folder. You might need to calculate the starting x and y coordinates of the grids to take the snapshots.
+These formula are used to calculate the block dimensitons of the maximized grids. You may use them to calculate the starting x and y coordinates of the grids to take the snapshots.
+        new_width, new_height = int(C.SCREEN_WIDTH * 0.8), int(C.MIDDLE_PLAY_HEIGHT * 0.8)
+        block_rect = pygame.Rect((C.SCREEN_WIDTH - new_width) // 2, C.TOP_MENU_HEIGHT + (C.MIDDLE_PLAY_HEIGHT - new_height) // 2, new_width, new_height)
 3. Use proper naming conventions for the files and folders. Write proper docstrings and comments for all functions and classes.
 
 # 3 - CONCLUDING INSTRUCTIONS

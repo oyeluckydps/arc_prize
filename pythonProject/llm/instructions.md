@@ -11,10 +11,6 @@ var WORKING_FOLDER = "./"
 # 2 - INSTRUCTION FOR THE JOB
 
 1. Create an __init__ file in the root folder.
-2. Create a function that works on ../GUI/constants.py file and sets the relevant parameters then calls set_pages() function.
-3. Set C.scene to "game" and let it call ../GUI/main.py file.
-4. Finally, write a function to take screenshot of the various components of the game and save it to a temp folder.
-
 
 # 3 - CONCLUDING INSTRUCTIONS
 

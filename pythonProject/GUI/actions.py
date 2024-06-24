@@ -3,6 +3,9 @@ from .constants import Constants as C
 from .data_initialize import check_solution
 import inspect
 import time
+import os                                                             
+from pathlib import Path   
+from .screens import game
 
 import pygame
 
@@ -55,10 +58,7 @@ def snapshot():
     """                                                                   
     Takes a screenshot of the complete game screen and saves it in the ./snapshots/total_page/<working_set>/<page_number>/ folder.                 
     Creates the folder if it doesn't exist.                               
-    """                                                                   
-    import os                                                             
-    from pathlib import Path                                              
-                                                                            
+    """                                                                                                                                                                                          
     try:                                                                  
         # Create the folder path                                          
         folder_path = Path(f'./snapshots/total_page/{C.working_set}/{C.page_number}/')            
@@ -103,4 +103,56 @@ def handle_button_click(pos, test_block_index, action):
             C.post_grid_params[test_block_index] = (actual_solution, C.post_grid_params[test_block_index][1],
                                                     C.post_grid_params[test_block_index][2])
 
+from .constants import Constants as C
+
+def snap_all_grids():
+    """
+    Maximizes each train grid one after another and takes a snapshot of only the input grid first and the output grid then.
+    This happens iteratively for all the train blocks and then the test blocks.
+    Saves the images in the ./snapshots/<working_set>/<page_number>/<test or train>_<index>_<input or output>.jpg file.
+    Creates the folder if it doesn't exist.
+    """
+    try:
+        # Define the folder path
+        folder_path = Path(f'./snapshots/{C.working_set}/{C.page_number}/')
+        folder_path.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        print(f'Error: {e}')
+        raise
+
+    pygame.image.save(C.screen, folder_path/"total_page.jpg") 
+
+    # Function to take a snapshot of a specific grid
+    def snapshot_grid(grid, grid_type, index, grid_name):
+        new_width, new_height = int(C.SCREEN_WIDTH * 0.8), int(C.MIDDLE_PLAY_HEIGHT * 0.8)
+        x_offset = new_width//2 if grid_name == 'output' else 0
+        block_rect = pygame.Rect((C.SCREEN_WIDTH - new_width) // 2 + x_offset, C.TOP_MENU_HEIGHT + (C.MIDDLE_PLAY_HEIGHT - new_height) // 2, new_width//2, new_height)
+        
+        maximize_block((grid_type=="test", C.page_number, index))
+
+        game.draw_middle_play()
+        pygame.display.flip()
+
+        snapshot = C.screen.subsurface(block_rect).copy()
+
+        # Define the screenshot file path
+        screenshot_path = folder_path / f'{grid_type}_{index}_{grid_name}.jpg'
+
+        # Take the screenshot and save it
+        pygame.image.save(snapshot, screenshot_path)
+
+    # Iterate over train blocks
+    for index, (pre_matrix, post_matrix) in enumerate(C.train_blocks_mats):
+        snapshot_grid(pre_matrix, 'train', index, 'input')
+        snapshot_grid(post_matrix, 'train', index, 'output')
+
+    # Iterate over test blocks
+    for index, (pre_matrix, post_matrix) in enumerate(C.test_blocks_mats):
+        snapshot_grid(pre_matrix, 'test', index, 'input')
+        snapshot_grid(post_matrix, 'test', index, 'output')
+
+    # Update the status message
+    C.status_message = "Snapshots taken successfully."
+
+    maximize_block(None)
 

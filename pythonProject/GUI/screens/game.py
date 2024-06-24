@@ -174,6 +174,7 @@ def game_screen():
                     actions.go_to_last_page()
                 elif C.snapshot_button_rect.collidepoint(pos):
                     actions.snapshot()
+                    actions.snap_all_grids()
                 elif C.exit_button.collidepoint(pos):
                     C.scene = "intro"
                     print("Transition from Game -> Intro")
