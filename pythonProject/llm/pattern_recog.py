@@ -1,9 +1,8 @@
-# Added comments to the code for better understanding
-
 import os
 from pathlib import Path
 from PIL import Image
 import google.generativeai as genai
+from chat_with_gemini import chat_with_gemini
 
 # Configure the Gemini API
 gemini_key_path = Path(".gemini_key")
@@ -62,27 +61,7 @@ def analyze_images(working_set: str, page_number: int) -> None:
 
     print(f"Max train index: {max_train_index}, Max test index: {max_test_index}")
 
-def chat_with_gemini(image: Image, matrix: list, case_type: str, index: int) -> dict:
-    """
-    Handles the chat with Gemini for input grids of both training and test type.
-
-    Args:
-        image (Image): The image to be analyzed.
-        matrix (list): The matrix representation of the image.
-        case_type (str): The type of case ('train' or 'test').
-        index (int): The index of the case.
-
-    Returns:
-        dict: The responses from Gemini.
-    """
-    # Convert the image to a format suitable for Gemini
-    image_path = Path(f'temp_{case_type}_{index}.jpg')
-    image.save(image_path)
-
-    # Upload the image to Gemini
-    uploaded_file = upload_to_gemini(image_path, mime_type="image/jpeg")
-
-    # Start a chat session with Gemini
+    # Create the model and chat session
     model = genai.GenerativeModel(
         model_name="gemini-1.5-flash",
         generation_config={
@@ -100,33 +79,16 @@ def chat_with_gemini(image: Image, matrix: list, case_type: str, index: int) -> 
             {
                 "role": "user",
                 "parts": [
-                    uploaded_file,
+                    upload_to_gemini(total_page_file, mime_type="image/jpeg"),
                 ],
             },
         ]
     )
 
-    # Send the image to Gemini and ask it to analyze the input grids
-    response1 = chat_session.send_message(f"I am sending a {case_type} input file of index {index}. Please analyze it.")
-    response2 = chat_session.send_message("Look at the input files from all training set and even the training grid of the test cases sent earlier. Find the patterns or similarities between all of these input grids.")
-    response3 = chat_session.send_message("Explain what you see, how it is related to what you have seen before, and the nature of input grids.")
-    response4 = chat_session.send_message("Explain the change in your conclusion based on what you have thought earlier about the nature of input grids.")
-
-    # Store the responses in a dictionary
-    responses = {
-        "what_gemini_sees": response1.text,
-        "relation_to_previous": response2.text,
-        "nature_of_input_grids": response3.text,
-        "change_in_conclusion": response4.text,
-    }
-
-    # Clean up the temporary image file
-    image_path.unlink()
-
-    return responses
-
-# Example usage
-# image = Image.open('path_to_image.jpg')
-# matrix = [[0, 1], [1, 0]]  # Example matrix
-# responses = chat_with_gemini(image, matrix, 'train', 1)
-# print(responses)
+    # Example usage of chat_with_gemini
+    for file in files:
+        if file.stem.startswith('train') or file.stem.startswith('test'):
+            image = Image.open(file)
+            matrix = [[0, 1], [1, 0]]  # Example matrix
+            responses = chat_with_gemini(image, matrix, file.stem.split('_')[0], int(file.stem.split('_')[1]), chat_session)
+            print(responses)
