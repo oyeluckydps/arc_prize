@@ -2,6 +2,9 @@ from .constants import Constants as C
 # from randomly_initialize import load_all_test_blocks
 from .data_initialize import check_solution
 import inspect
+import time
+
+import pygame
 
 def reset_states():
     # print(f"The name of this function is {inspect.currentframe().f_code.co_name}")
@@ -47,6 +50,30 @@ def go_to_last_page():
     C.page_number = C.LAST_PAGE
     reset_states()
     reset_blocks()
+
+def snapshot():                                                    
+    """                                                                   
+    Takes a screenshot of the complete game screen and saves it in the ./snapshots/total_page/<working_set>/<page_number>/ folder.                 
+    Creates the folder if it doesn't exist.                               
+    """                                                                   
+    import os                                                             
+    from pathlib import Path                                              
+                                                                            
+    try:                                                                  
+        # Create the folder path                                          
+        folder_path = Path(f'./snapshots/total_page/{C.working_set}/{C.page_number}/')            
+        folder_path.mkdir(parents=True, exist_ok=True)                    
+                                                                            
+        # Define the screenshot file path                                 
+        screenshot_path = folder_path / f'{time.time()}.png'                  
+                                                                            
+        # Take the screenshot and save it                                 
+        pygame.image.save(C.screen, screenshot_path)                      
+                                                                            
+        # Update the status message                                       
+        C.status_message = f"Screenshot saved to {screenshot_path}"       
+    except Exception as e:                                                
+        C.status_message = f"Failed to save screenshot: {e}" 
 
 def handle_button_click(pos, test_block_index, action):
     """ Handle button click actions for copy, reset, and submit """

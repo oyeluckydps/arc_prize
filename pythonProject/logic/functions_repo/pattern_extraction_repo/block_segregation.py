@@ -22,21 +22,14 @@ def block_segregation(pattern: Pattern, mould: Optional[cellExpansion] = None) -
     unexplored_cells = set(pattern.cells)
     explored_patterns = []
 
-    def nearest_8_neighbors(cell: Cell) -> Pattern:
-        x = cell.x
-        y = cell.y
-        color = cell.color
-        neighbors = [
-            (x-1, y-1), (x-1, y), (x-1, y+1),
-            (x, y-1),           (x, y+1),
-            (x+1, y-1), (x+1, y), (x+1, y+1)
-        ]
-        # Filter out neighbors that are out of bounds
-        return Pattern([Cell(i, j, color) for i, j in neighbors])
-
     if mould is None:
-        from ..cell_expansion_repo.expand_to_nearest_8 import expand_to_nearest_8
-        mould = expand_to_nearest_8()
+        from ..cell_expansion_repo.expand_to_nearest_8 import fun_obj as expand_to_nearest_8
+        from ..pattern_transformation_repo.trim_to_arena import fun_obj as trim_to_arena
+        mould = expand_to_nearest_8
+    
+    expand_and_trim = lambda cell: trim_to_arena.method(expand_to_nearest_8.method(cell), height = None, width = None)
+    compose_fun_obj = cellExpansion(expand_and_trim, 
+                                    description= "Returns a Pattern composed of the nearest 8 cells to the given cell avoiding the borders of the arena.")
 
     while unexplored_cells:
         to_explore = [unexplored_cells.pop()]
@@ -46,16 +39,16 @@ def block_segregation(pattern: Pattern, mould: Optional[cellExpansion] = None) -
             current_cell = to_explore.pop()
             explored_cells.add(current_cell)
 
-            if mould:
-                neighbours = mould.method(current_cell)
-            else:
-                neighbours = [Cell(current_cell.x + dx, current_cell.y + dy, current_cell.color)
-                              for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]]
+            neighbours = compose_fun_obj.method(current_cell)
 
             for neighbour in neighbours:
-                if neighbour in unexplored_cells:
-                    unexplored_cells.remove(neighbour)
-                    to_explore.append(neighbour)
+                # This step is a workaround till we have programmed all the abstraction functions. Ideally, we would
+                # like to turn a cell into an abstraction such that it matches any other cell's location without taking
+                # into account the color.
+                for cell in unexplored_cells:
+                    if (neighbour.x, neighbour.y) == (cell.x, cell.y):
+                        unexplored_cells.remove(cell)
+                        to_explore.append(cell)
 
         explored_patterns.append(Pattern(explored_cells))
 

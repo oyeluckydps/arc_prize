@@ -60,6 +60,7 @@ class Constants():
     left_button = pygame.Rect(70, 10, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT)
     right_button = pygame.Rect(280, 10, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT)
     double_right_button = pygame.Rect(340, 10, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT)
+    snapshot_button_rect = pygame.Rect(SCREEN_WIDTH - 210, SCREEN_HEIGHT - BOTTOM_STATUS_HEIGHT + 10, 200, 30)
     exit_button = pygame.Rect(SCREEN_WIDTH - 20 - 150, 10, EXIT_BUTTON_WIDTH, EXIT_BUTTON_HEIGHT)
 
     test_blocks_num = None

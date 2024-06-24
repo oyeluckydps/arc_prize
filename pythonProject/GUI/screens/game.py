@@ -151,6 +151,9 @@ def draw_bottom_status():
     pygame.draw.rect(C.screen, Color.GRAY, bottom_status_rect)
     text = C.font.render(C.status_message, True, Color.BLACK)
     C.screen.blit(text, (10, C.SCREEN_HEIGHT - C.BOTTOM_STATUS_HEIGHT + 10))
+    # Draw SNAPSHOT button
+    pygame.draw.rect(C.screen, Color.BLUE, C.snapshot_button_rect)
+    C.screen.blit(C.small_font.render('SNAPSHOT', True, Color.WHITE), (C.snapshot_button_rect.x + 5, C.snapshot_button_rect.y + 5))
 
 def game_screen():
     while C.scene == "game":
@@ -169,6 +172,8 @@ def game_screen():
                     actions.update_page(1)
                 elif C.double_right_button.collidepoint(pos):
                     actions.go_to_last_page()
+                elif C.snapshot_button_rect.collidepoint(pos):
+                    actions.snapshot()
                 elif C.exit_button.collidepoint(pos):
                     C.scene = "intro"
                     print("Transition from Game -> Intro")

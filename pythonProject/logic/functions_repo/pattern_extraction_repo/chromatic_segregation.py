@@ -6,6 +6,7 @@ from a grid based on the specified color or all colors from 0 to 9.
 from typing import List, Optional
 from ...object_type.grid import Grid
 from ...object_type.pattern import Pattern
+from ..pattern_extraction import patternExtraction
 
 def chromatic_segregation(grid: Grid, color: Optional[int] = None) -> List[Pattern]:
     """
@@ -28,3 +29,5 @@ def chromatic_segregation(grid: Grid, color: Optional[int] = None) -> List[Patte
             patterns.append(Pattern(cells))
     return patterns
 
+fun_obj = patternExtraction(chromatic_segregation, 
+                            description= "Extracts patterns from the grid based on the specified color or all colors from 0 to 9.")
