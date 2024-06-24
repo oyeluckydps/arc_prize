@@ -3,6 +3,8 @@ from utils.file_handling import load_json_by_page
 from logic.conversions.matrix_handling import list_to_matrix
 from logic.pattern.segregation import input_based
 from GUI.patterns.display import display_patterns_list
+from llm.snapshot import get_snapshots
+
 def main():
     # Define the path to the folder
     folder_path = Path("processed_json/evaluation_challenges/")
@@ -23,8 +25,12 @@ def main():
     
     # Print the result
     print(result)
-    print("Input Patterns:", input_patterns)
-    print("Output Patterns:", output_patterns)
+    
+def snap():
+    working_set = "evaluation_challenges"
+    page_number = 13
+
+    get_snapshots(working_set, page_number)
 
 if __name__ == "__main__":
-    main()
+    snap()
