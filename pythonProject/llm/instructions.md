@@ -1,4 +1,5 @@
-var WORKING_FODLER = "./"
+var WORKING_FILE = "./pattern_recog.py"
+var WORKING_FOLDER = "./"
 
 The WORKING_FILE define the file@function that the agent should work on.
 The WORKING_FOLDER defines the folder that the agent should work on.
@@ -15,10 +16,7 @@ The agent should ONLY make changes to the files in WORKING_FOLDER or the WORKING
 
 # 2 - INSTRUCTION FOR THE JOB
 
-1. Move the chat_with_gemini function to a new file in the CWD.
-2. Create the mode and chat_session in the analyze_images function and pass it to chat_with_gemini as an argument.
-3. You do not need to create a temporary image file. You can directly pass the image to GEMINI using chat_session.send_message(iamge).
-4. Make the appropriate changes to all the files.
+1. A custom gemini model is put in the ./connectors/gemini.py file. Instead of using the google.generativeai as genai library, use the connectors/gemini.py file to upload the images and chat with gemini and use the model to generate the output. Replace all the code such that the agent can use the gemini model to generate the output.
 
 # 3 - CONCLUDING INSTRUCTIONS
 

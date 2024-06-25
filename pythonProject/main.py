@@ -1,11 +1,11 @@
-from pathlib import Path
-from utils.file_handling import load_json_by_page
-from logic.conversions.matrix_handling import list_to_matrix
-from logic.pattern.segregation import input_based
-from GUI.patterns.display import display_patterns_list
-from llm.snapshot import get_snapshots
 
 def main():
+    from pathlib import Path
+    from utils.file_handling import load_json_by_page
+    from logic.conversions.matrix_handling import list_to_matrix
+    from logic.pattern.segregation import input_based
+    from GUI.patterns.display import display_patterns_list
+
     # Define the path to the folder
     folder_path = Path("processed_json/evaluation_challenges/")
     
@@ -25,12 +25,23 @@ def main():
     
     # Print the result
     print(result)
-    
+
+
 def snap():
+    from llm.snapshot import get_snapshots
     working_set = "evaluation_challenges"
     page_number = 13
 
     get_snapshots(working_set, page_number)
 
+
+def chat():
+    from llm.pattern_recog import analyze_images
+    working_set = "evaluation_challenges"
+    page_number = 13
+
+    analyze_images(working_set, page_number)
+
+
 if __name__ == "__main__":
-    snap()
+    chat()

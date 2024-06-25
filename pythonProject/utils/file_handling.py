@@ -2,6 +2,20 @@ from pathlib import Path
 import json
 import glob
 
+def image_folder_path(working_set: str = None, page_number: int = None) -> Path:
+    image_path = Path(f'./snapshots/')
+    if working_set is not None:
+        image_path = image_path / working_set
+        if page_number is not None:
+            image_path = image_path / str(page_number)
+    return image_path
+
+def json_folder_path(working_set: str) -> Path:
+    folder_path = Path(f"processed_json/")
+    if working_set is not None:
+        folder_path = folder_path / working_set
+    return folder_path
+
 def load_json_by_page(folder, page_number):
     """
     Loads the JSON file corresponding to the given page number.
