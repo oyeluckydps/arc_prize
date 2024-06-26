@@ -62,10 +62,12 @@ history=[
   ]
 )
 
-second_image = Image.open(IMAGES_FOLDER/Path("004.png"))
+second_image = Image.open(IMAGES_FOLDER/Path("total_page.jpg"))
 response = chat_session.send_message("I would like you to analyze the input grids of the Training section and tell me how many training grid do you see. Next I would like you to comment on the shape or pattern of the non black cells for each grid and tell me if you find something common among all of these grids.")
+print("### 1 ###" + response.text)
 response2 = chat_session.send_message(second_image)
+print("### 2 ###" + response2.text)
 response3 = chat_session.send_message("Now Analyze this image too.")
-print(response3.text)
+print("### 3 ###" + response3.text)
 
 pass
