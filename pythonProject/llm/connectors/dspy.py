@@ -68,23 +68,18 @@ class DSPy(LLMConnector):
             self.__chat = self.__chat_session.send_message                              # Send a message through the chat session.
 
         # Configuring the DSPy IO signature
-        if io_signature is None:
+        if io_signature is None and module is None:
             self.io_signature = 'question -> answer'
-        else:
-            self.io_signature = io_signature
-
-        # Configuring the DSPy module
-        if module is None:
             self.module = dspy.Predict(self.io_signature)
-        else:
-            # This is typical use case where configured module is passed.
-            if io_signature is None: # If module is passed but IO signature is not, we assume that the module is already configured.
-                self.module = module
+        elif io_signature is not None and module is None:
+            self.io_signature = io_signature
+            self.module = dspy.TypedPredictor(self.io_signature)
+        elif io_signature is None and module is not None:
+            self.module = module       # This is typical use case where configured module is passed.
+        else:                          # Module is passed but IO signature is not configured in the module. We need to reconfigure the module.
+            self.io_signature = io_signature
+            self.module = dspy.Predict(self.io_signature)
 
-            # Module is passed but IO signature is not configured in the module. We need to reconfigure the module.
-            else:
-                self.module = module(self.io_signature)
-                
         # print(f"Initialized DSPy LLM with model {self.model} \n Module = {self.module} \n and io_signature = {self.io_signature}")
 
 
