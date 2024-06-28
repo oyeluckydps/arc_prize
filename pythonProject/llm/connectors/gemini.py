@@ -42,7 +42,7 @@ class Gemini(LLMConnector):
         print("Initialized Gemini LLM")
 
 
-    def zero_shot(self, message: str) -> str:
+    def one_shot(self, message: str) -> str:
         response = self.model.send_message(message)
         return response.text
 
@@ -53,5 +53,8 @@ class Gemini(LLMConnector):
 
     def loop(self, message: str) -> str:
         raise NotImplementedError("Gemini's loop strategy not provided")
-    
-    
+
+
+    def zero_shot(self, message: str) -> str:
+        response = self.model.send_message(message)
+        return response.text

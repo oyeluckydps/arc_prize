@@ -13,8 +13,8 @@ class OpenAI(LLMConnector):
     def send_message(self, message: str) -> str:
         raise NotImplementedError("OpenAI's send_message implementation not provided")
 
-    def zero_shot(self, message: str) -> str:
-        raise NotImplementedError("OpenAI's zero_shot strategy not provided")
+    def one_shot(self, message: str) -> str:
+        raise NotImplementedError("OpenAI's one_shot strategy not provided")
 
     def chain_of_thought(self, message: str) -> str:
         raise NotImplementedError("OpenAI's CoT strategy not provided")

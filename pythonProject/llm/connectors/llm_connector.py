@@ -3,13 +3,13 @@ from typing import Dict, List, Callable
 
 class LLMConnector(ABC):
     def __init__(self, strategy_method: str, system_info: str = "") -> None:
-        self.strategy_method: str = strategy_method
+        self.strategy_method: str = strategy_method if strategy_method is not None else 'one_shot'
         self.system_info: str = system_info
         self.chat_history: List[Dict[str, str]] = []
 
         # Initialize strategies
         self.strategies: Dict[str, Callable[[str], str]] = {
-            'zero_shot': self.zero_shot,
+            'one_shot': self.one_shot,
             'CoT': self.chain_of_thought,
             'loop': self.loop
         }
@@ -23,7 +23,7 @@ class LLMConnector(ABC):
         return response
 
     @abstractmethod
-    def zero_shot(self, message: str) -> str:
+    def one_shot(self, message: str) -> str:
         pass
 
     @abstractmethod
@@ -39,5 +39,3 @@ class LLMConnector(ABC):
             self.current_strategy = self.strategies[new_strategy_method]
         else:
             raise ValueError("Unsupported strategy")
-        
-    
