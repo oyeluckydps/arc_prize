@@ -14,7 +14,7 @@ class LLMConnector(ABC):
             'loop': self.loop
         }
         
-        self.current_strategy: Callable[[str], str] = self.strategies[strategy_method]
+        self.current_strategy: Callable[[str], str] = self.strategies[strategy_method] if strategy_method in self.strategies else None
 
     def send_message(self, message: str) -> str:
         self.chat_history.append({"role": "user", "content": message})

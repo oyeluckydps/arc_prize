@@ -22,6 +22,10 @@ class DSPy(LLMConnector):
         
         if strategy_method is None and io_signature is None:
             self.current_strategy = self.direct
+        elif strategy_method == 'direct':
+            self.current_strategy = self.direct
+        elif strategy_method == 'chat':
+            self.current_strategy = self.chat
         # Else if strategy_method is None but io_signature is not None then current_strategy is already assigned the zero_shot method.
         
         self.initialize_dspy(module, model, io_signature)
@@ -81,7 +85,7 @@ class DSPy(LLMConnector):
             else:
                 self.module = module(self.io_signature)
                 
-        print(f"Initialized DSPy LLM with model {self.model} \n Module = {self.module} \n and io_signature = {self.io_signature}")
+        # print(f"Initialized DSPy LLM with model {self.model} \n Module = {self.module} \n and io_signature = {self.io_signature}")
 
 
     def send_message(self, *args, **kwargs):
@@ -112,10 +116,10 @@ class DSPy(LLMConnector):
 
     def direct(self, message: str) -> str:
         response = self.__direct_call(message)
-        return response
+        return response.text
 
 
     def chat(self, message: str) -> str:
         response = self.__chat(message)
-        return response
+        return response.text
     
