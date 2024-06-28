@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 from typing import Tuple, List, Dict, Any
+from PIL import Image
+from collections import OrderedDict
 
 class GridAnalysis(BaseModel):
     dimensions: Tuple[int, int]

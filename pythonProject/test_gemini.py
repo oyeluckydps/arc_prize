@@ -52,14 +52,14 @@ files = [
 ]
 
 chat_session = model.start_chat(
-history=[
-    {
-      "role": "user",
-      "parts": [
-        files[0],
-      ],
-    },
-  ]
+                                    history=[
+                                        {
+                                            "role": "user",
+                                            "parts": [
+                                                files[0],
+                                                        ],
+                                        },
+                                    ]
 )
 
 second_image = Image.open(IMAGES_FOLDER/Path("total_page.jpg"))
