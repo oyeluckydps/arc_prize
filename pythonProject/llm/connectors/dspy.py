@@ -13,7 +13,6 @@ class DSPy(LLMConnector):
     WE have formed a wrapper over the DSPy library for connection with theoutside world as DSPy is very young and may not be the best choice for the future.
     Essentially, we have provided four functions here:
     - one_shot: This function is same as Predict/TypedPredict of DSPy. It takes a message and returns a response in mentioned format.
-    - one_shot_chat: This function is same as Predict/TypedPredict of DSPy but it keeps the history of the conversation. Be mindful to not let it grow too long as it sends the complete history to the LLM everytime.
     - direct: This function calls the underlying modeel directly. Note that it bypasses the DSPy module and does not keep the history of the conversation.
     - chat: This function calls the underlying model in chat mode. Note that it bypasses the DSPy module but keeps the history of the conversation.
     '''
@@ -30,21 +29,6 @@ class DSPy(LLMConnector):
         
         self.initialize_dspy(module, model, io_signature)
         # self.initialize_one_shot_chat()
-
-    def initialize_one_shot_chat(self):
-        raise NotImplementedError("DSPy's chat with history strategy not provided")
-        self.one_shot_chat_history = []
-
-        class SignatureWithHistory(self.io_signature):
-            f'''
-            I have provided the history of the conversation in the HISTORY variable. In this all text against role: user was asked/provided by the user while all text against role: assistant was provided by the LLM.
-            You job is to go through the HISTORY and provide the response to the user. The current task will be described now.
-            {self.io_signature.__doc__}
-            '''
-            HISTORY:str = dspy.InputField()
-
-        self.io_signature_with_history = SignatureWithHistory
-        self.__one_shot_chat = self.model(self.io_signature_with_history)       # Essentially replacing the exisitng module's Signature with the one with history.
 
 
     def initialize_dspy(self, module = None, model = None, io_signature = None) -> None:
@@ -92,12 +76,6 @@ class DSPy(LLMConnector):
 
     def one_shot(self, *args,**kwargs):
         response = self.module(*args, **kwargs)
-        return response
-
-
-    def one_shot_chat(self, *args,**kwargs):
-        raise NotImplementedError("DSPy's chat with history strategy not provided")
-        response = self.__one_shot_chat(*args, HISTORY=self.one_shot_chat_history, **kwargs)
         return response
 
 

@@ -67,6 +67,9 @@ response = chat_session.send_message("I would like you to analyze the input grid
 print("### 1 ###" + response.text)
 response2 = chat_session.send_message(second_image)
 print("### 2 ###" + response2.text)
+
+# chat_session.history[0].parts[0].file_data.file_uri
+
 response3 = chat_session.send_message("Now Analyze this image too.")
 print("### 3 ###" + response3.text)
 
