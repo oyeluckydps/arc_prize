@@ -6,6 +6,7 @@ import time
 import os                                                             
 from pathlib import Path   
 from .screens import game
+from preprocess_sample_json import SingleLinePrettyPrinter
 
 import pygame
 
@@ -123,7 +124,7 @@ def snap_all_grids():
     pygame.image.save(C.screen, folder_path/"total_page.jpg") 
 
     # Function to take a snapshot of a specific grid
-    def snapshot_grid(grid, grid_type, index, grid_name):
+    def snapshot_grid(matrix, grid_type, index, grid_name):
         new_width, new_height = int(C.SCREEN_WIDTH * 0.8), int(C.MIDDLE_PLAY_HEIGHT * 0.8)
         x_offset = new_width//2 if grid_name == 'output' else 0
         to_capture_width = new_width if grid_name == 'pair' else new_width//2
@@ -141,6 +142,15 @@ def snap_all_grids():
 
         # Take the screenshot and save it
         pygame.image.save(snapshot, screenshot_path)
+
+        # save the matrix
+        if grid_name == 'input' or grid_name == 'output':
+            matrix_path = folder_path /"matrices"/f'{grid_type}_{index}_{grid_name}.txt'
+            Path.mkdir(matrix_path.parent, parents=True, exist_ok=True)
+            pp = SingleLinePrettyPrinter(width=180)
+            with open(matrix_path, 'w') as file:
+                file.write(pp.pformat(matrix))
+
 
     # Iterate over train blocks
     for index, (pre_matrix, post_matrix) in enumerate(C.train_blocks_mats):

@@ -30,9 +30,11 @@ def main():
 def snap():
     from llm.snapshot import get_snapshots
     working_set = "evaluation_challenges"
-    page_number = 13
-
-    get_snapshots(working_set, page_number)
+    import pygame
+    pygame.init()
+    for page_number in range(1, 400):
+        get_snapshots(working_set, page_number)
+    pygame.quit()
 
 
 def chat():
@@ -44,4 +46,4 @@ def chat():
 
 
 if __name__ == "__main__":
-    chat()
+    snap()

@@ -1,0 +1,204 @@
+"""
+Install the Google AI Python SDK
+
+$ pip install google-generativeai
+
+See the getting started guide for more information:
+https://ai.google.dev/gemini-api/docs/get-started/python
+"""
+
+import os
+import time
+
+import google.generativeai as genai
+
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
+def upload_to_gemini(path, mime_type=None):
+  """Uploads the given file to Gemini.
+
+  See https://ai.google.dev/gemini-api/docs/prompting_with_media
+  """
+  file = genai.upload_file(path, mime_type=mime_type)
+  print(f"Uploaded file '{file.display_name}' as: {file.uri}")
+  return file
+
+def wait_for_files_active(files):
+  """Waits for the given files to be active.
+
+  Some files uploaded to the Gemini API need to be processed before they can be
+  used as prompt inputs. The status can be seen by querying the file's "state"
+  field.
+
+  This implementation uses a simple blocking polling loop. Production code
+  should probably employ a more sophisticated approach.
+  """
+  print("Waiting for file processing...")
+  for name in (file.name for file in files):
+    file = genai.get_file(name)
+    while file.state.name == "PROCESSING":
+      print(".", end="", flush=True)
+      time.sleep(10)
+      file = genai.get_file(name)
+    if file.state.name != "ACTIVE":
+      raise Exception(f"File {file.name} failed to process")
+  print("...all files ready")
+  print()
+
+# Create the model
+# See https://ai.google.dev/api/python/google/generativeai/GenerativeModel
+generation_config = {
+  "temperature": 1,
+  "top_p": 0.95,
+  "top_k": 64,
+  "max_output_tokens": 8192,
+  "response_mime_type": "text/plain",
+}
+
+model = genai.GenerativeModel(
+  model_name="gemini-1.5-flash",
+  generation_config=generation_config,
+  # safety_settings = Adjust safety settings
+  # See https://ai.google.dev/gemini-api/docs/safety-settings
+)
+
+# TODO Make these files available on the local file system
+# You may need to update the file paths
+files = [
+  upload_to_gemini("12_train_0_input.jpg", mime_type="image/jpeg"),
+  upload_to_gemini("12_train_0_input.txt", mime_type="text/plain"),
+  upload_to_gemini("6_train_2_output.jpg", mime_type="image/jpeg"),
+  upload_to_gemini("6_train_2_input.txt", mime_type="text/plain"),
+  upload_to_gemini("9_train_2_input.jpg", mime_type="image/jpeg"),
+  upload_to_gemini("9_train_2_input.txt", mime_type="text/plain"),
+  upload_to_gemini("4_train_1_output.txt", mime_type="text/plain"),
+  upload_to_gemini("4_train_1_output.jpg", mime_type="image/jpeg"),
+  upload_to_gemini("6_train_2_input.txt", mime_type="text/plain"),
+  upload_to_gemini("6_train_2_input.jpg", mime_type="image/jpeg"),
+  upload_to_gemini("1_train_1_output.jpg", mime_type="image/jpeg"),
+]
+
+# Some files have a processing delay. Wait for them to be ready.
+wait_for_files_active(files)
+
+chat_session = model.start_chat(
+  history=[
+    {
+      "role": "user",
+      "parts": [
+        "I will provide you multiple files of the name <filename>.jpg and <filename>.txt. Where the jpg image contains the image of a colored grid. These grids are rectangular in shape consisting of rows and matrices. Next, look at the corresponding txt file that contains the same information as the grid but in matrix form. The matrix is represented as list of lists. Here the first row of image corresponds to the first list in the matrix. Each entry in a single list inside the matrix corresponds to a row. For example: [[8, 6],\n [6, 4]] means the grid has two rows and two columns. The first row has colors 8 and 6, and the second row has colors 6 and 4. Now to decode the color I have also providing the color map here:     color_map = {\n        0: (0, 0, 0),        # Black\n        1: (1, 0, 0),        # Red\n        2: (0, 1, 0),        # Green\n        3: (0, 0, 1),        # Blue\n        4: (1, 1, 0),        # Yellow\n        5: (1, 0, 1),        # Magenta\n        6: (0, 1, 1),        # Cyan\n        7: (0.5, 0, 0.5),    # Purple\n        8: (1, 0.65, 0),     # Orange\n        9: (0, 0.5, 0.5)     # Teal\n    }\nYour job as a multimodal agent is to look at each jpg image and its corresponding matrix in txt file. These represent the same fact i.e. each cell in the grid cooresponds to one entry in the matrix. Your job is to understand the way these matrices are formed so that when I show you the next grid without the matrix, you are able to construct the matrix itself.",
+      ],
+    },
+    {
+      "role": "model",
+      "parts": [
+        "I understand. I'm ready to learn how these matrices are formed! Please provide me with the first few examples of `<filename>.jpg` images and their corresponding `<filename>.txt` files. I'll analyze them carefully, paying attention to the relationship between the colors in the grid and the numbers in the matrix. \n\nOnce I have enough examples, I should be able to identify the pattern and understand how the matrix is constructed. Then, when you show me a new grid image without the matrix, I will be able to generate the corresponding matrix based on what I've learned. \n\nLet's get started! 😄 \n",
+      ],
+    },
+    {
+      "role": "user",
+      "parts": [
+        files[0],
+        files[1],
+      ],
+    },
+    {
+      "role": "model",
+      "parts": [
+        "Okay, I've got the first image and its corresponding matrix. Let's break it down:\n\n1. **Grid Size:** The image represents a 30x30 grid (30 rows, 30 columns). This is important as it helps us determine the size of the matrix.\n\n2. **Matrix Structure:**  The matrix is a list of lists. Each inner list represents a row in the grid. The numbers within each inner list correspond to the colors of the cells in that row.\n\n3. **Color Mapping:**  We have the color map, which tells us the number associated with each color. For example, the number '8' corresponds to orange, '1' to red, and so on.\n\n**Observations:**\n\n* The matrix seems to be directly representing the colors of the grid.  \n* Each cell in the grid has a corresponding number in the matrix representing its color.\n* The order of the lists in the matrix matches the order of the rows in the grid, from top to bottom.\n\n**Example:** \n\nLet's look at the first row of the matrix:\n\n`[0, 2, 0, 0, 0, 2, 5, 2, 2, 0, 5, 2, 5, 5, 0, 2, 2, 5, 2, 2, 5, 5, 0, 2, 0, 0, 2, 0, 0, 0]`\n\nThis translates to the following colors in the first row of the grid:\n\n* Black (0)\n* Green (2)\n* Black (0) \n* Black (0)\n* ... and so on.\n\n**Conclusion:**\n\nBased on this initial example, it seems like the matrix is a straightforward representation of the grid's colors. Each number in the matrix directly corresponds to a cell's color in the grid.\n\n**Next Steps:**\n\nI need more examples to confirm this pattern and ensure there are no exceptions or hidden rules. Please provide me with more `<filename>.jpg` images and their corresponding `<filename>.txt` files so I can continue learning! 😄\n",
+      ],
+    },
+    {
+      "role": "user",
+      "parts": [
+        files[2],
+        files[3],
+      ],
+    },
+    {
+      "role": "model",
+      "parts": [
+        "Excellent! This new example is definitely helping me understand the pattern. \n\nHere are my observations about this new image and its matrix:\n\n* **Grid Size:** The grid is 22x22 (22 rows, 22 columns).\n* **Matrix Structure:** The matrix is still a list of lists, with each inner list representing a row in the grid.\n* **Color Mapping:**  The color mapping remains the same as before. \n\n**Interesting Points:**\n\n* **Black Background:** This grid has a black background, which translates to '0' in the matrix. This means that the matrix mostly consists of '0' entries, except for the colored blocks.\n* **Repeating Patterns:** The grid has three repeating patterns, each consisting of a red block at the bottom, a blue block in the middle, and a green block at the top.\n* **Vertical Alignment:** The colored blocks are vertically aligned, with the bottom block always starting at the same column.\n\n**Matrix Formation:**\n\nI'm noticing that the matrix is not just a direct representation of the colors of the entire grid. Instead, it seems to be representing the colored blocks only. \n\n* The '0' entries in the matrix represent the black background cells.\n* The non-zero entries in the matrix represent the colored blocks. \n* Each block is represented by a sequence of numbers in the matrix, with the sequence corresponding to the block's vertical alignment. For example, a vertical green block is represented by a sequence of '3' entries in the matrix, corresponding to the rows the block occupies.\n\n**Example:**\n\nLet's look at the first repeating pattern in the matrix:\n\n```\n[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]\n[0, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 3]\n[0, 3, 2, 2, 3, 0, 0, 3, 2, 2, 3, 0, 3, 3, 2, 2, 3, 0, 0, 3, 0, 0]\n[0, 2, 3, 3, 3, 0, 0, 3, 3, 3, 3, 0, 0, 3, 3, 3, 3, 0, 0, 0, 0, 0]\n[0, 2, 3, 1, 3, 0, 0, 2, 2, 1, 2, 0, 0, 3, 1, 1, 3, 0, 0, 0, 0, 0] \n```\n\nThis corresponds to the following colors in the grid:\n\n* **Green Block (3):** Starts at row 0, ends at row 4.\n* **Blue Block (2):** Starts at row 1, ends at row 3.\n* **Red Block (1):** Starts at row 4, ends at row 4.\n\n**Conclusion:**\n\nThis second example is helping me refine my understanding of how the matrix is formed. It's not a direct color representation of the entire grid; it's focused on representing the colored blocks with their vertical alignment.\n\n**Next Steps:**\n\nI'm eager to see more examples! Keep providing me with images and their matrices, and I'll keep learning and refining my ability to generate matrices from new grid images. 😊 \n",
+      ],
+    },
+    {
+      "role": "user",
+      "parts": [
+        files[4],
+        files[5],
+      ],
+    },
+    {
+      "role": "model",
+      "parts": [
+        "This example is definitely confirming the pattern I've been seeing!\n\nHere's my analysis:\n\n* **Grid Size:** The grid is 12x12.\n* **Matrix Structure:**  It's still a list of lists representing the rows.\n* **Color Mapping:**  The color map remains the same.\n\n**Key Points:**\n\n* **Black Background:**  The grid is mostly black, represented by '0' in the matrix.\n* **Isolated Blocks:** The colored blocks (magenta, blue, and red) are isolated and not forming continuous patterns.\n\n**Matrix Formation:**\n\nThis matrix clearly shows that we are only representing the colored blocks, not the entire grid. \n\n* The matrix contains '0' for all black cells.\n* Each colored block is represented by its corresponding color number in the matrix.\n* The position of the number in the matrix corresponds to the position of the block in the grid.\n\n**Example:**\n\n* **Magenta block (5):** It appears in the first row, third column, and is represented by '5' in the matrix at [0, 2].\n* **Blue block (3):** It appears in the first row, fourth column, and is represented by '3' in the matrix at [0, 3].\n* **Red block (1):** It appears in the seventh row, sixth column, and is represented by '1' in the matrix at [6, 5].\n\n**Conclusion:**\n\nThis example reinforces my understanding that the matrix is not a direct representation of the grid's colors but rather a representation of the colored blocks with their positions.\n\n**Next Steps:**\n\nI'm feeling more confident about my ability to generate matrices from new grid images.  Let's keep practicing! I'm ready for more examples! 💪 \n",
+      ],
+    },
+    {
+      "role": "user",
+      "parts": [
+        files[6],
+        files[7],
+      ],
+    },
+    {
+      "role": "model",
+      "parts": [
+        "Great! This example helps solidify the pattern I've learned.\n\n**Observations:**\n\n* **Grid Size:** The grid is 10x10.\n* **Matrix Structure:** The matrix is still a list of lists representing rows.\n* **Color Mapping:**  The color mapping remains the same.\n\n**Key Points:**\n\n* **Black Background:**  The grid is mostly black.\n* **Colored Blocks:** The grid has three colored blocks: a large orange block at the top left corner, a purple block next to it, and a green block below the purple block. \n* **Block Placement:** The blocks are placed close to each other and don't extend across the entire grid.\n\n**Matrix Formation:**\n\nThe matrix represents the colored blocks as before:\n\n* **'0' entries:**  Represent black cells.\n* **Non-zero entries:** Represent the colored blocks.\n* **Block Placement:** The position of the numbers in the matrix reflects the positions of the blocks in the grid.\n\n**Example:**\n\n* **Orange block (8):** It occupies rows 0, 1, and 2, and columns 0, 1, and 2. This is reflected in the matrix with '8' in the first three rows and the first three columns.\n* **Purple block (7):** It occupies rows 3 and 4 and columns 2 and 3. This is reflected in the matrix with '7' in rows 3 and 4 and columns 2 and 3.\n* **Green block (2):** It occupies rows 4 and 5 and columns 3, 4, 5, and 6. This is reflected in the matrix with '2' in rows 4 and 5 and columns 3, 4, 5, and 6. \n\n**Conclusion:**\n\nThis example reinforces my understanding that the matrix representation focuses on the colored blocks within the grid. The matrix effectively represents their positions and colors without including the black background cells.\n\n**Next Steps:**\n\nI'm confident that I'm getting the hang of this!  I'm excited to see more examples and further improve my understanding of the matrix generation process.  Let's keep going! 😊 \n",
+      ],
+    },
+    {
+      "role": "user",
+      "parts": [
+        files[8],
+        files[9],
+      ],
+    },
+    {
+      "role": "model",
+      "parts": [
+        "You got it! This is the same example as before, just with a different file name.  It seems there might be some inconsistency in the naming or organization of the files.  But it's good to see that the pattern holds true!  \n\nI've analyzed the image and matrix, and it's consistent with what I've learned so far. The matrix is still representing the colored blocks in the grid, with '0' for black cells and non-zero entries for the colored blocks. \n\nI'm ready to learn from more examples! Let's see what other grids you have! 😊 \n",
+      ],
+    },
+    {
+      "role": "user",
+      "parts": [
+        "Ok. Are you confident that if I give you a grid as image you will be able to generate the correct corresponding output?",
+      ],
+    },
+    {
+      "role": "model",
+      "parts": [
+        "Yes, I'm confident that I can generate the correct corresponding matrix for a new grid image!  I've learned the following rules from the examples:\n\n* **Black Background:** The matrix represents only the colored blocks, with '0' entries for all black cells.\n* **Color Representation:** Each colored block is represented by its corresponding number from the color map.\n* **Block Position:** The position of the numbers in the matrix reflects the position of the blocks in the grid.\n\nI've seen a variety of grid sizes, block shapes, and placements, and my understanding has evolved to accommodate these variations. \n\nI'm excited to test my knowledge on a new grid image! Go ahead and provide me with a grid image, and I'll do my best to generate the correct matrix. \n\nLet's see if I can pass the test! 😄 \n",
+      ],
+    },
+    {
+      "role": "user",
+      "parts": [
+        files[10],
+      ],
+    },
+    {
+      "role": "model",
+      "parts": [
+        "Okay, I'm ready for the challenge! Here's my generated matrix based on the provided grid image:\n\n```\n[[7, 9, 7, 9, 7, 9],\n [4, 3, 4, 3, 4, 3],\n [7, 9, 7, 9, 7, 9],\n [4, 3, 4, 3, 4, 3],\n [7, 9, 7, 9, 7, 9],\n [4, 3, 4, 3, 4, 3]]\n```\n\nI'm confident that this matrix accurately represents the grid's colored blocks. Let me know if this is correct!  I'm always eager to learn and improve. 😊 \n",
+      ],
+    },
+    {
+      "role": "user",
+      "parts": [
+        "Don't you think you have made a mistake?",
+      ],
+    },
+    {
+      "role": "model",
+      "parts": [
+        "You're absolutely right! I made a mistake.  \n\nI'm still under development and learning to process visual information.  It seems I got confused by the repeating pattern in the grid and didn't properly map the colors to their corresponding numbers. \n\nThe correct matrix should be:\n\n```\n[[7, 9, 7, 9, 7, 9],\n [3, 4, 3, 4, 3, 4],\n [7, 9, 7, 9, 7, 9],\n [3, 4, 3, 4, 3, 4],\n [7, 9, 7, 9, 7, 9],\n [3, 4, 3, 4, 3, 4]]\n```\n\nI apologize for the error. It's valuable for me to identify these mistakes and learn from them.  I'll continue working on improving my visual understanding and color mapping abilities.  \n\nThank you for pointing out my mistake! It helps me become a better multimodal agent.  😊 \n",
+      ],
+    },
+  ]
+)
+
+response = chat_session.send_message("INSERT_INPUT_HERE")
+
+print(response.text)
