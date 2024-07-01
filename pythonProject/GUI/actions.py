@@ -126,7 +126,8 @@ def snap_all_grids():
     def snapshot_grid(grid, grid_type, index, grid_name):
         new_width, new_height = int(C.SCREEN_WIDTH * 0.8), int(C.MIDDLE_PLAY_HEIGHT * 0.8)
         x_offset = new_width//2 if grid_name == 'output' else 0
-        block_rect = pygame.Rect((C.SCREEN_WIDTH - new_width) // 2 + x_offset, C.TOP_MENU_HEIGHT + (C.MIDDLE_PLAY_HEIGHT - new_height) // 2, new_width//2, new_height)
+        to_capture_width = new_width if grid_name == 'pair' else new_width//2
+        block_rect = pygame.Rect((C.SCREEN_WIDTH - new_width) // 2 + x_offset, C.TOP_MENU_HEIGHT + (C.MIDDLE_PLAY_HEIGHT - new_height) // 2, to_capture_width, new_height)
         
         maximize_block((grid_type=="test", C.page_number, index))
 
@@ -145,11 +146,13 @@ def snap_all_grids():
     for index, (pre_matrix, post_matrix) in enumerate(C.train_blocks_mats):
         snapshot_grid(pre_matrix, 'train', index, 'input')
         snapshot_grid(post_matrix, 'train', index, 'output')
+        snapshot_grid(post_matrix, 'train', index, 'pair')
 
     # Iterate over test blocks
     for index, (pre_matrix, post_matrix) in enumerate(C.test_blocks_mats):
         snapshot_grid(pre_matrix, 'test', index, 'input')
         snapshot_grid(post_matrix, 'test', index, 'output')
+        snapshot_grid(post_matrix, 'test', index, 'pair')
 
     # Update the status message
     C.status_message = "Snapshots taken successfully."
