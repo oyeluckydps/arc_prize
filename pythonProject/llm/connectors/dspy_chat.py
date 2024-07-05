@@ -83,10 +83,6 @@ class DSPyChat(LLMConnector):
         raise NotImplementedError("DSPy Chat's one_shot strategy not provided")
 
 
-    def chain_of_thought(self, message: str) -> str:
-        raise NotImplementedError("DSPy's CoT strategy not provided")
 
 
-    def loop(self, message: str) -> str:
-        raise NotImplementedError("DSPy's loop strategy not provided")
 

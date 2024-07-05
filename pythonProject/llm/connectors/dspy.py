@@ -10,10 +10,10 @@ from .llm_connector import LLMConnector
 
 class DSPy(LLMConnector):
     '''
-    WE have formed a wrapper over the DSPy library for connection with theoutside world as DSPy is very young and may not be the best choice for the future.
+    WE have formed a wrapper over the DSPy library for connection with the outside world as DSPy is very young and may not be the best choice for the future.
     Essentially, we have provided four functions here:
     - one_shot: This function is same as Predict/TypedPredict of DSPy. It takes a message and returns a response in mentioned format.
-    - direct: This function calls the underlying modeel directly. Note that it bypasses the DSPy module and does not keep the history of the conversation.
+    - direct: This function calls the underlying model directly. Note that it bypasses the DSPy module and does not keep the history of the conversation.
     - chat: This function calls the underlying model in chat mode. Note that it bypasses the DSPy module but keeps the history of the conversation.
     '''
     def __init__(self, strategy_method: str, system_info: str = "", module = None, model = None, io_signature = None) -> None:
@@ -79,14 +79,6 @@ class DSPy(LLMConnector):
         return response
 
 
-    def chain_of_thought(self, message: str) -> str:
-        raise NotImplementedError("DSPy's CoT strategy not provided")
-
-
-    def loop(self, message: str) -> str:
-        raise NotImplementedError("DSPy's loop strategy not provided")
-
-
     def direct(self, message: str) -> str:
         response = self.__direct_call(message)
         return response.text
@@ -95,4 +87,3 @@ class DSPy(LLMConnector):
     def chat(self, message: str) -> str:
         response = self.__chat(message)
         return response.text
-    

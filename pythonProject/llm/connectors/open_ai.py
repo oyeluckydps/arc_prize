@@ -10,16 +10,16 @@ class OpenAI(LLMConnector):
         # Placeholder function for Open AI LLM initialization
         print("Initialized Open AI LLM")
 
-    def send_message(self, message: str) -> str:
-        raise NotImplementedError("OpenAI's send_message implementation not provided")
+    def chat_history(self, message: str) -> str:
+        raise NotImplementedError("OpenAI's chat_history is not implemented.")
+
+    def clear_chat(self, message: str) -> str:
+        raise NotImplementedError("OpenAI's chat_history is not implemented.")
 
     def one_shot(self, message: str) -> str:
         raise NotImplementedError("OpenAI's one_shot strategy not provided")
 
-    def chain_of_thought(self, message: str) -> str:
-        raise NotImplementedError("OpenAI's CoT strategy not provided")
+    def chat(self, message: str) -> str:
+        raise NotImplementedError("OpenAI's chat strategy not provided")
 
-    def loop(self, message: str) -> str:
-        raise NotImplementedError("OpenAI's loop strategy not provided")
-    
-    
+

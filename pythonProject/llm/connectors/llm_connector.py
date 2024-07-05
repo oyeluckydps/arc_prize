@@ -5,21 +5,28 @@ class LLMConnector(ABC):
     def __init__(self, strategy_method: str, system_info: str = "") -> None:
         self.strategy_method: str = strategy_method if strategy_method is not None else 'one_shot'
         self.system_info: str = system_info
-        self.chat_history: List[Dict[str, str]] = []
+        self.one_shot_history: List[Dict[str, str]] = []
 
         # Initialize strategies
         self.strategies: Dict[str, Callable[[str], str]] = {
             'one_shot': self.one_shot,
-            'CoT': self.chain_of_thought,
-            'loop': self.loop
-        }
-        
+            'chat': self.chat
+        }        
         self.current_strategy: Callable[[str], str] = self.strategies[strategy_method] if strategy_method in self.strategies else None
 
+    @abstractmethod
+    def chat_history(self, message: str) -> str:
+        pass
+
+    @abstractmethod
+    def clear_chat(self, message: str) -> str:
+        pass
+
     def send_message(self, message: str) -> str:
-        self.chat_history.append({"role": "user", "content": message})
         response = self.current_strategy(message)
-        self.chat_history.append({"role": "assistant", "content": response})
+        if self.current_strategy == self.one_shot:
+            self.chat_history.append({"role": "user", "content": message})
+            self.chat_history.append({"role": "assistant", "content": response})
         return response
 
     @abstractmethod
@@ -27,11 +34,7 @@ class LLMConnector(ABC):
         pass
 
     @abstractmethod
-    def chain_of_thought(self, message: str) -> str:
-        pass
-
-    @abstractmethod
-    def loop(self, message: str) -> str:
+    def chat(self, message: str) -> str:
         pass
 
     def change_strategy(self, new_strategy_method: str) -> None:

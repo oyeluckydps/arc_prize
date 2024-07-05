@@ -4,5 +4,6 @@
 pythonProject/scratchpad.py
 pythonProject/snapshots/*
 pythonProject/.gemini_key
+pythonProject/.anthropic_key
 ec
 *.vscode*
