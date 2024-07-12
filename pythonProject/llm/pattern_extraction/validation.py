@@ -1,90 +1,148 @@
-from typing import List, Dict, Any, Tuple
-from .pattern_description_signature import Matrix
-import json
+from typing import List, Tuple
+from .pattern_description_signature import Matrix, PatternDetails
+from .failure_reports import FailureReportGenerator
 
 class Validator:
-    def validate_decomposition(self, original_grid: Matrix, extracted_patterns: List[Matrix], pattern_descriptions: List[Dict[str, Any]]) -> List[str]:
+    """
+    A class for validating pattern extractions from grids.
+    """
+
+    def __init__(self):
+        self.report_generator = FailureReportGenerator()
+
+    def validate_decomposition(self, original_grid: Matrix, extracted_patterns: List[List[Matrix]], pattern_descriptions: List[PatternDetails]) -> List[str]:
+        """
+        Validate the decomposition of a grid into patterns.
+
+        Args:
+            original_grid (Matrix): The original grid to be decomposed.
+            extracted_patterns (List[List[Matrix]]): A list where each entry corresponds to a pattern description and contains one or more extracted matrices.
+            pattern_descriptions (List[PatternDetails]): A list of pattern descriptions.
+
+        Returns:
+            List[str]: A list of failure reports, if any.
+        """
         failure_reports = []
-        
+
+        # Check if all extracted patterns have the same dimensions as the original grid
+        if not self._check_dimensions(original_grid, extracted_patterns):
+            return [self.report_generator.generate_dimension_mismatch_report(original_grid, extracted_patterns)]
+
+        # Check if patterns are present in the original grid
         if not self._are_patterns_in_grid(extracted_patterns, original_grid):
-            failure_reports.append(self._generate_pattern_not_present_report(original_grid, extracted_patterns, pattern_descriptions))
-        
-        if not self._do_patterns_form_grid(extracted_patterns, original_grid):
-            failure_reports.append(self._generate_incomplete_grid_report(original_grid, extracted_patterns))
-        
-        overlapping_patterns = self._are_patterns_non_overlapping(extracted_patterns)
-        if overlapping_patterns:
-            failure_reports.append(self._generate_overlap_report(original_grid, extracted_patterns, pattern_descriptions, overlapping_patterns))
-        
+            return [self.report_generator.generate_pattern_not_present_report(original_grid, extracted_patterns, pattern_descriptions)]
+
+        # Calculate the check grid
+        check_grid = self._calculate_check_grid(original_grid, extracted_patterns)
+
+        # Check for overlaps
+        overlaps = self._check_overlaps(check_grid)
+        if overlaps:
+            failure_reports.append(self.report_generator.generate_overlap_report(original_grid, pattern_descriptions, overlaps))
+
+        # Check for completeness
+        incomplete_cells = self._check_completeness(check_grid)
+        if incomplete_cells:
+            failure_reports.append(self.report_generator.generate_completeness_report(original_grid, incomplete_cells))
+
         return failure_reports
 
-    def _are_patterns_in_grid(self, patterns: List[Matrix], grid: Matrix) -> bool:
-        return all(self._is_pattern_in_grid(pattern, grid) for pattern in patterns)
+    def _check_dimensions(self, original_grid: Matrix, extracted_patterns: List[List[Matrix]]) -> bool:
+        """
+        Check if all extracted patterns have the same dimensions as the original grid.
+
+        Args:
+            original_grid (Matrix): The original grid.
+            extracted_patterns (List[List[Matrix]]): The extracted patterns.
+
+        Returns:
+            bool: True if all dimensions match, False otherwise.
+        """
+        original_dims = (len(original_grid.matrix), len(original_grid.matrix[0]))
+        return all(
+            (len(pattern.matrix), len(pattern.matrix[0])) == original_dims
+            for pattern_list in extracted_patterns
+            for pattern in pattern_list
+        )
+
+    def _are_patterns_in_grid(self, patterns: List[List[Matrix]], grid: Matrix) -> bool:
+        """
+        Check if all extracted patterns are present in the original grid.
+
+        Args:
+            patterns (List[List[Matrix]]): The extracted patterns.
+            grid (Matrix): The original grid.
+
+        Returns:
+            bool: True if all patterns are present, False otherwise.
+        """
+        return all(
+            self._is_pattern_in_grid(pattern, grid)
+            for pattern_list in patterns
+            for pattern in pattern_list
+        )
 
     def _is_pattern_in_grid(self, pattern: Matrix, grid: Matrix) -> bool:
-        for i in range(len(grid.matrix) - len(pattern.matrix) + 1):
-            for j in range(len(grid.matrix[0]) - len(pattern.matrix[0]) + 1):
-                if self._match_pattern(pattern, grid, i, j):
-                    return True
-        return False
+        """
+        Check if a single pattern is present in the grid.
 
-    def _match_pattern(self, pattern: Matrix, grid: Matrix, start_i: int, start_j: int) -> bool:
-        for i in range(len(pattern.matrix)):
-            for j in range(len(pattern.matrix[0])):
-                if pattern.matrix[i][j] is not None and pattern.matrix[i][j] != grid.matrix[start_i + i][start_j + j]:
+        Args:
+            pattern (Matrix): The pattern to check.
+            grid (Matrix): The original grid.
+
+        Returns:
+            bool: True if the pattern is present, False otherwise.
+        """
+        for i in range(len(grid.matrix)):
+            for j in range(len(grid.matrix[0])):
+                if pattern.matrix[i][j] is not None and pattern.matrix[i][j] != grid.matrix[i][j]:
                     return False
         return True
 
-    def _do_patterns_form_grid(self, patterns: List[Matrix], grid: Matrix) -> bool:
-        combined_grid = [[None for _ in range(len(grid.matrix[0]))] for _ in range(len(grid.matrix))]
-        for pattern in patterns:
-            for i in range(len(pattern.matrix)):
-                for j in range(len(pattern.matrix[0])):
-                    if pattern.matrix[i][j] is not None:
-                        if combined_grid[i][j] is None:
-                            combined_grid[i][j] = pattern.matrix[i][j]
-                        elif combined_grid[i][j] != pattern.matrix[i][j]:
-                            return False
-        return combined_grid == grid.matrix
+    def _calculate_check_grid(self, original_grid: Matrix, extracted_patterns: List[List[Matrix]]) -> List[List[List[int]]]:
+        """
+        Calculate the check grid for overlap and completeness checks.
 
-    def _are_patterns_non_overlapping(self, patterns: List[Matrix]) -> List[Tuple[int, int]]:
-        overlapping_patterns = []
-        for i in range(len(patterns)):
-            for j in range(i + 1, len(patterns)):
-                if self._patterns_overlap(patterns[i], patterns[j]):
-                    overlapping_patterns.append((i, j))
-        return overlapping_patterns
+        Args:
+            original_grid (Matrix): The original grid.
+            extracted_patterns (List[List[Matrix]]): The extracted patterns.
 
-    def _patterns_overlap(self, pattern1: Matrix, pattern2: Matrix) -> bool:
-        for i in range(len(pattern1.matrix)):
-            for j in range(len(pattern1.matrix[0])):
-                if pattern1.matrix[i][j] is not None and pattern2.matrix[i][j] is not None:
-                    return True
-        return False
+        Returns:
+            List[List[List[int]]]: The check grid with pattern IDs for each cell.
+        """
+        check_grid = [[[] for _ in range(len(original_grid.matrix[0]))] for _ in range(len(original_grid.matrix))]
 
-    def _generate_pattern_not_present_report(self, original_grid: Matrix, extracted_patterns: List[Matrix], pattern_descriptions: List[Dict[str, Any]]) -> str:
-        return f"Pattern not present in the original grid.\n" \
-               f"Pattern description: {json.dumps(pattern_descriptions, indent=2)}\n" \
-               f"Extracted patterns: {json.dumps([p.matrix for p in extracted_patterns], indent=2)}\n" \
-               f"Original grid: {json.dumps(original_grid.matrix, indent=2)}\n" \
-               f"The extracted pattern does not match any part of the original grid."
+        for pattern_id, pattern_list in enumerate(extracted_patterns):
+            for pattern in pattern_list:
+                for i in range(len(pattern.matrix)):
+                    for j in range(len(pattern.matrix[0])):
+                        if pattern.matrix[i][j] is not None:
+                            check_grid[i][j].append(pattern_id)
 
-    def _generate_incomplete_grid_report(self, original_grid: Matrix, extracted_patterns: List[Matrix]) -> str:
-        return f"Extracted patterns do not combine to form the complete original grid.\n" \
-               f"Original grid: {json.dumps(original_grid.matrix, indent=2)}\n" \
-               f"Extracted patterns: {json.dumps([p.matrix for p in extracted_patterns], indent=2)}\n" \
-               f"The combination of all extracted patterns does not recreate the original grid exactly."
+        return check_grid
 
-    def _generate_overlap_report(self, original_grid: Matrix, extracted_patterns: List[Matrix], pattern_descriptions: List[Dict[str, Any]], overlapping_patterns: List[Tuple[int, int]]) -> str:
-        overlap_report = f"Extracted patterns are overlapping in the following grid:\n"
-        overlap_report += f"Original grid: {json.dumps(original_grid.matrix, indent=2)}\n\n"
-        overlap_report += "Overlapping patterns:\n"
-        for i, j in overlapping_patterns:
-            overlap_report += f"Pattern 1:\n"
-            overlap_report += f"Description: {json.dumps(pattern_descriptions[i], indent=2)}\n"
-            overlap_report += f"Extracted pattern: {json.dumps(extracted_patterns[i].matrix, indent=2)}\n\n"
-            overlap_report += f"Pattern 2:\n"
-            overlap_report += f"Description: {json.dumps(pattern_descriptions[j], indent=2)}\n"
-            overlap_report += f"Extracted pattern: {json.dumps(extracted_patterns[j].matrix, indent=2)}\n\n"
-        overlap_report += "These patterns have non-None values in the same position, indicating overlap."
-        return overlap_report
+    def _check_overlaps(self, check_grid: List[List[List[int]]]) -> List[Tuple[int, int, List[int]]]:
+        """
+        Check for overlapping patterns in the extracted patterns.
+
+        Args:
+            check_grid (List[List[List[int]]]): The check grid with pattern IDs for each cell.
+
+        Returns:
+            List[Tuple[int, int, List[int]]]: List of overlapping cells with their pattern IDs.
+        """
+        return [(i, j, cell) for i, row in enumerate(check_grid) for j, cell in enumerate(row) if len(cell) > 1]
+
+    def _check_completeness(self, check_grid: List[List[List[int]]]) -> List[Tuple[int, int]]:
+        """
+        Check for completeness of coverage in the extracted patterns.
+
+        Args:
+            check_grid (List[List[List[int]]]): The check grid with pattern IDs for each cell.
+
+        Returns:
+            List[Tuple[int, int]]: List of cells not covered by any pattern.
+        """
+        return [(i, j) for i, row in enumerate(check_grid) for j, cell in enumerate(row) if not cell]
+    
+    
