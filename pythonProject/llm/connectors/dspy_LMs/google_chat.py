@@ -51,7 +51,7 @@ BLOCK_ONLY_HIGH = [
 ]
 
 
-class CustomGoogle(LM):
+class GoogleChat(LM):
     """Wrapper around Google's API.
 
     Currently supported models include `gemini-pro-1.0`.
@@ -120,7 +120,7 @@ class CustomGoogle(LM):
         if n is not None and n > 1 and kwargs['temperature'] == 0.0:
             kwargs['temperature'] = 0.7
 
-        response = self.llm.send_message(prompt, generation_config=kwargs)   # Instead of using the generate_content from genai.GenerativeModel as send method we use the send_message of chat_session as the send method.
+        response = self.llm.send_message(prompt, generation_config=kwargs).text   # Instead of using the generate_content from genai.GenerativeModel as send method we use the send_message of chat_session as the send method.
 
         history = {
             "prompt": prompt,

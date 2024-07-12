@@ -22,11 +22,12 @@ class LLMConnector(ABC):
     def clear_chat(self, message: str) -> str:
         pass
 
-    def send_message(self, message: str) -> str:
-        response = self.current_strategy(message)
+    def send_message(self, *args, **kwargs) -> str:
+        response = self.current_strategy(*args, **kwargs)
         if self.current_strategy == self.one_shot:
-            self.chat_history.append({"role": "user", "content": message})
-            self.chat_history.append({"role": "assistant", "content": response})
+            self.one_shot_history.append({"role": "user", "content": args})
+            self.one_shot_history.append({"role": "user", "content": kwargs})
+            self.one_shot_history.append({"role": "assistant", "content": response})
         return response
 
     @abstractmethod

@@ -10,8 +10,8 @@ from pathlib import Path
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 from connectors.dspy import DSPy
-# from ..dspy import DSPy
-
+import dspy
+from connectors.dspy_LMs.claude_chat import ClaudeChat
 
 # Define the Character class using Pydantic
 class Character(BaseModel):
@@ -39,6 +39,11 @@ whose nurturing nature and soothing voice calmed even the rowdiest classroom.
 
 
 class TestDSPy(unittest.TestCase):
+    def setUp(self):
+        # Set up Anthropic model
+        self.claude = dspy.Claude("claude-3-5-sonnet-20240620", api_key=os.environ.get('ANTHROPIC_API_KEY'))
+        self.claude_chat = ClaudeChat("claude-3-5-sonnet-20240620", api_key=os.environ.get('ANTHROPIC_API_KEY'))
+
     def test_initialization(self):
         dspy_instance = DSPy(strategy_method='one_shot', system_info='')
         self.assertIsNotNone(dspy_instance)
@@ -61,28 +66,28 @@ class TestDSPy(unittest.TestCase):
         self.assertIsInstance(response2, str)
         self.assertIn("Grinch", response2)
 
-    def test_direct_strategy(self):
-        dspy_instance = DSPy(strategy_method='direct', system_info='')
-        response = dspy_instance.send_message("What is the capital of Germany?")
-        self.assertIsNotNone(response)
-        self.assertIsInstance(response, str)
+    def test_initialization_anthropic(self):
+        dspy_instance = DSPy(strategy_method='one_shot', system_info='', model=self.claude)
+        self.assertIsNotNone(dspy_instance)
+        self.assertEqual(dspy_instance.strategy_method, 'one_shot')
+        self.assertEqual(dspy_instance.system_info, '')
 
-    def test_one_shot_with_signature(self):
-        dspy_instance = DSPy(strategy_method='one_shot', system_info='', io_signature=StoryToCharacters)
-        response = dspy_instance.send_message(story = story_text)
+    def test_send_message_one_shot_anthropic(self):
+        dspy_instance = DSPy(strategy_method='one_shot', system_info='', model=self.claude)
+        response = dspy_instance.send_message(question = "What is the capital of France?")
         self.assertIsNotNone(response)
-        self.assertIsInstance(response.characters, list)
-        self.assertEqual(len(response.characters), 3)
+        self.assertIsInstance(response.answer, str)
 
-    def test_chat_with_image(self):
-        dspy_instance = DSPy(strategy_method='chat', system_info='')
-        img = Image.open(Path("./spiral.jpg"))
-        response = dspy_instance.send_message([img])
-        self.assertIsNotNone(response)
-        self.assertIsInstance(response, str)
-        response2 = dspy_instance.send_message("What do you see in the image?")
+    def test_chat_strategy_anthropic(self):
+        dspy_instance = DSPy(strategy_method='chat', system_info='', chat_model=self.claude_chat)
+        response1 = dspy_instance.send_message("My name is Dr. Seuss. I am a cartoonist and creator of Grinch. ")
+        self.assertIsNotNone(response1)
+        self.assertIsInstance(response1, str)
+        response2 = dspy_instance.send_message("Name one character created by me that I mentioned in the previous message.")
         self.assertIsNotNone(response2)
         self.assertIsInstance(response2, str)
+        self.assertIn("Grinch", response2)
+
 
 if __name__ == '__main__':
     unittest.main()

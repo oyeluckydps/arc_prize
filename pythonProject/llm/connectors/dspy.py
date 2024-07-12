@@ -2,6 +2,7 @@ from typing import Dict, List, Callable
 from pathlib import Path
 
 import google.generativeai as genai
+from .dspy_LMs.google_chat import GoogleChat
 import dspy
 
 
@@ -16,74 +17,82 @@ class DSPy(LLMConnector):
     - direct: This function calls the underlying model directly. Note that it bypasses the DSPy module and does not keep the history of the conversation.
     - chat: This function calls the underlying model in chat mode. Note that it bypasses the DSPy module but keeps the history of the conversation.
     '''
-    def __init__(self, strategy_method: str, system_info: str = "", module = None, model = None, io_signature = None) -> None:
+    def __init__(self, strategy_method: str, system_info: str = "", model = None, chat_model = None, module = None, chat_module = None, io_signature = None) -> None:
         super().__init__(strategy_method, system_info)
         
-        if strategy_method is None and io_signature is None:
-            self.current_strategy = self.direct
-        elif strategy_method == 'direct':
-            self.current_strategy = self.direct
-        elif strategy_method == 'chat':
-            self.current_strategy = self.chat
-        # Else if strategy_method is None but io_signature is not None then current_strategy is already assigned the zero_shot method.
-        
-        self.initialize_dspy(module, model, io_signature)
+        self.initialize_dspy(model, module, io_signature)
+        self.initialize_dspy_chat(chat_model, chat_module, io_signature)
         # self.initialize_one_shot_chat()
 
 
-    def initialize_dspy(self, module = None, model = None, io_signature = None) -> None:
+    def initialize_dspy(self, model = None, module = None, io_signature = None) -> None: 
+        import os
         # Configuring the DSPy model
         if model is None:
-            # Getting the API key.
-            gemini_key_path = Path(".gemini_key")
-            with gemini_key_path.open('r') as file:
-                gemini_key = file.read()
-            self.model = dspy.Google("models/gemini-1.5-pro", api_key=gemini_key)
+            self.model = dspy.Google("models/gemini-1.5-pro", api_key=os.environ['GEMINI_API_KEY'])
         else:
-            self.model = model      # dspy.MODEL type model
-        dspy.settings.configure(lm=self.model, max_tokens=8196)
+            self.model = model      # dspy.MODEL type model that supports calling 
         
-        self.__direct_call = self.model.basic_request               # Use it to send direct message to the model (any model) bypassing the DSPy module.
-
-        # Chat with history only supported for Gemini models as of now.
-        # Configure the chat (with history) methods. Unfortuantely, it is not possible to use the benefits of DSPy with the chat with history method.
-        if isinstance(dspy.settings.config["lm"].llm, genai.GenerativeModel):
-            self.__chat_session = dspy.settings.config["lm"].llm.start_chat()           # Start a new chat session. You may use this to check the status of the chat session.
-            self.__chat = self.__chat_session.send_message                              # Send a message through the chat session.
-
-        # Configuring the DSPy IO signature
-        if io_signature is None and module is None:
+        # Configuring the DSPy signature.
+        if io_signature is None:
             self.io_signature = 'question -> answer'
-            self.module = dspy.Predict(self.io_signature)
-        elif io_signature is not None and module is None:
+        else:
             self.io_signature = io_signature
-            self.module = dspy.TypedPredictor(self.io_signature)
-        elif io_signature is None and module is not None:
-            self.module = module       # This is typical use case where configured module is passed.
-        else:                          # Module is passed but IO signature is not configured in the module. We need to reconfigure the module.
+        
+        # Configuring the DSPy one_shot module.
+        if module is None and io_signature is None:
+            self._one_shot_module = dspy.Predict(signature = self.io_signature)
+        elif module is None and io_signature is not None:
+            self._one_shot_module = dspy.TypedPredict(signature = self.io_signature)
+        else:
+            self._one_shot_module = module
+            self._one_shot_module.signature = self.io_signature
+            # self._one_shot_module.lm = self.model
+
+    def initialize_dspy_chat(self, chat_model = None, chat_module = None, io_signature = None) -> None: 
+        import os
+        # Configuring the DSPy chat model
+        if chat_model is None:
+            self.chat_model = GoogleChat("models/gemini-1.5-pro", api_key=os.environ['GEMINI_API_KEY'])
+        else:
+            self.chat_model = chat_model      # dspy.MODEL type model that supports calling 
+        
+        # Configuring the DSPy signature.
+        if io_signature is None:
+            self.io_signature = 'question -> answer'
+        else:
             self.io_signature = io_signature
-            self.module = dspy.Predict(self.io_signature)
+        
+        # Configuring the DSPy chat module.
+        if chat_module is None and io_signature is None:
+            self._chat_module = dspy.Predict(signature = self.io_signature, lm=self.chat_model)
+        elif chat_module is None and io_signature is not None:
+            self._chat_module = dspy.TypedPredict(signature = self.io_signature, lm=self.chat_model)
+        else:
+            self._chat_module = chat_module
+            self._chat_module.signature = self.io_signature
+            self._chat_module.lm = self.chat_model
 
-        # print(f"Initialized DSPy LLM with model {self.model} \n Module = {self.module} \n and io_signature = {self.io_signature}")
 
-
-    def send_message(self, *args, **kwargs):
-        response = self.current_strategy(*args, **kwargs)       # Configured by default to direct if strategy_method is None and io_signature is None, else zero_shot if strategy_method wass None at initialization.
-        self.chat_history.append({"role": "user", "content": (args, kwargs)})
-        self.chat_history.append({"role": "assistant", "content": response})
+    def one_shot(self, *args, **kwargs):
+        saved_config = dspy.settings.config
+        dspy.settings.configure(lm=self.model, max_tokens=8196)
+        response = self._one_shot_module(*args, **kwargs)  # I have to mention it again due to a bug in the DSPy library. It either takes the glovally set LM or locally passed and not the LM set in Predict/TypedPredict.
+        dspy.settings.configure(**saved_config)
         return response
+
+    def chat(self, *args, **kwargs) -> str:
+        all_responses = []
+        if len(args) > 0:
+            for arg in args:
+                all_responses.append(self._chat_module.config["lm"].basic_request(arg))
+        if len(kwargs) > 0:
+            all_responses.append(self._chat_module(**kwargs))
+        return all_responses if len(all_responses)>1 else all_responses[0]
     
+    def chat_history(self) -> str:
+        return self._chat_module.lm.history()
+    
+    def clear_chat(self) -> None:
+        self._chat_module.lm.history = []
 
-    def one_shot(self, *args,**kwargs):
-        response = self.module(*args, **kwargs)
-        return response
-
-
-    def direct(self, message: str) -> str:
-        response = self.__direct_call(message)
-        return response.text
-
-
-    def chat(self, message: str) -> str:
-        response = self.__chat(message)
-        return response.text
