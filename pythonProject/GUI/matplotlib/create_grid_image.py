@@ -25,7 +25,7 @@ def create_grid_image(matrix):
    
     # Create the grid
     for (x, y), value in np.ndenumerate(grid):
-        color = color_map.get(str(value), (1, 1, 1))  # Default to white if color not found
+        color = color_map.get(str(value), (128/255, 128/255, 128/255))  # Default to grey if color not found
         rect = plt.Rectangle([y, x], 1, 1, facecolor=color, edgecolor='grey')
         ax.add_patch(rect)
    
