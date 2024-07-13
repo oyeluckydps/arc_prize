@@ -14,13 +14,13 @@ class PatternDetails(BaseModel):
     """
     model_config = ConfigDict(populate_by_name=True)
     
-    name: str = Field(..., alias="Give a suitable name to this pattern")
-    matrices: Optional[List[int]] = Field(None, alias="In which matrices is this pattern found?")
-    prominent_reason: Optional[str] = Field(None, alias="What makes it a prominent and outstanding pattern?")
-    location: Optional[str] = Field(None, alias="Where is the pattern to be found?")
-    unique_identifier: Optional[str] = Field(None, alias="How to uniquely identify this pattern if an input matrix is provided?")
-    common_features: Optional[List[str]] = Field(None, alias="If the pattern is found across multiple inputs then what features of the pattern are common across these inputs?")
-    varying_features: Optional[List[str]] = Field(None, alias="If the pattern is found across multiple inputs then what features of the pattern vary across these inputs?")
+    name: str = Field(..., description="Give a suitable name to this pattern")
+    matrices: Optional[List[int]] = Field(None, description="In which matrices is this pattern found?")
+    prominent_reason: Optional[str] = Field(None, description="What makes it a prominent and outstanding pattern?")
+    location: Optional[str] = Field(None, description="Where is the pattern to be found?")
+    unique_identifier: Optional[str] = Field(None, description="How to uniquely identify this pattern if an input matrix is provided?")
+    common_features: Optional[List[str]] = Field(None, description="If the pattern is found across multiple inputs then what features of the pattern are common across these inputs?")
+    varying_features: Optional[List[str]] = Field(None, description="If the pattern is found across multiple inputs then what features of the pattern vary across these inputs?")
 
 
 class PatternList(BaseModel):
@@ -29,7 +29,7 @@ class PatternList(BaseModel):
     """
     model_config = ConfigDict(populate_by_name=True)
     
-    list_of_patterns: List[PatternDetails] = Field(..., alias="List all the pattern descriptions of the patterns found in the matrices")
+    list_of_patterns: List[PatternDetails] = Field(..., description="List all the pattern descriptions of the patterns found in the matrices")
 
 
 # Define the Pydantic model for matrix
@@ -76,3 +76,4 @@ class PatternDescriptionSignature(dspy.Signature):
     
 
     
+
