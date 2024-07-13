@@ -1,110 +1,102 @@
-import json
 import datetime
 from typing import List, Dict, Any
+from pathlib import Path
+
 from .models import PatternTree, SchemaOfDecomposition, PatternNode
-from .utils import dspy_pattern_descriptor, dspy_pattern_extractor, pp
-from .validation import Validator
+from .utils_pattern_extraction import log_interaction, load_cached_data, save_cached_data, dspy_pattern_descriptor, dspy_pattern_extractor
+from .pattern_extractor import extract_and_validate_patterns
+from .validation import check_completeness
 from .pattern_description_signature import PatternDescriptionSignature, Matrix, PatternDetails
 from .pattern_extraction_signature import PatternExtractionSignature
+from .globals import IS_DEBUG
+
 
 class GridPatternExtractor:
+    """Class for extracting patterns from grids."""
+
     def __init__(self, grids: List[Matrix], grids_type: str = 'Input'):
+        """
+        Initialize the GridPatternExtractor.
+
+        Args:
+            grids (List[Matrix]): List of input grids.
+            grids_type (str, optional): Type of grids. Defaults to 'Input'.
+        """
         self.grids = grids
         self.grids_type = grids_type
         self.pattern_trees: List[PatternTree] = [PatternTree(grid) for grid in grids]
         self.schema = SchemaOfDecomposition()
         self.time = f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         self.log_file = f"pattern_extraction_{self.time}.txt"
-        self.validator = Validator()
-
-    def log_interaction(self, prompt: str, response: str):
-        with open(self.log_file, 'a') as f:
-            f.write(f"Prompt: {prompt}\n\n")
-            f.write(f"Response: {response}\n\n")
-            f.write("-" * 80 + "\n\n")
 
     def find_patterns(self) -> List[PatternDetails]:
+        """Find patterns in the grids."""
         prompt = PatternDescriptionSignature.sample_prompt()
         matrices = {f"{self.grids_type} Matrix {i+1}": grid for i, grid in enumerate(self.grids)}
-        response = dspy_pattern_descriptor.send_message(question=prompt, matrices=matrices)
-        self.log_interaction(prompt, response)
-        return response.patterns_description.list_of_patterns
-
-    def extract_pattern(self, grid: Matrix, pattern_description: PatternDetails) -> List[Matrix]:
-        prompt = PatternExtractionSignature.sample_prompt(grid, pattern_description)
-        response = dspy_pattern_extractor.send_message(query=prompt, matrix=grid, pattern_description=pattern_description)
-        self.log_interaction(prompt, response)
-        return list(response.output_pattern)
-
-    def correct_pattern_finding(self, failure_reports: List[str]) -> List[PatternDetails]:
-        prompt = f"""
-        Based on the pattern descriptions, patterns were identified for each grid. However, the following validation failures were reported:
         
-        {json.dumps(failure_reports, indent=2)}
-
-        Please correct the pattern descriptions that you found so that it addresses these failures. Ensure that the corrected patterns are non-overlapping, distinct, and exhaustive.
-        """
-        matrices = {f"{self.grids_type} Matrix {i+1}": grid for i, grid in enumerate(self.grids)}
+        if IS_DEBUG:
+            filename = Path(__file__).parent / "sample_pattern_description.pickle"
+            cached_data = load_cached_data(filename)
+            if cached_data:
+                return cached_data
+            
         response = dspy_pattern_descriptor.send_message(question=prompt, matrices=matrices)
-        self.log_interaction(prompt, response)
+        log_interaction(self.log_file, prompt, response)
+        
+        if IS_DEBUG:
+            save_cached_data(filename, response.patterns_description.list_of_patterns)
+        
         return response.patterns_description.list_of_patterns
 
     def decompose_grids(self):
-        while True:
-            patterns = self.find_patterns()
-            all_failure_reports = []
-
-            for i, grid in enumerate(self.grids):
-                extracted_patterns = []
-                pattern_descriptions = []
-                for pattern in patterns:
-                    pattern_name = pattern.name
-                    pattern_desc = pattern
-                    if i + 1 in pattern_desc.matrices:
-                        extracted = self.extract_pattern(grid, pattern_desc)
-                        extracted_patterns.append(extracted)
-                        pattern_descriptions.append(pattern_desc)
-                
-                failure_reports = self.validator.validate_decomposition(grid, extracted_patterns, pattern_descriptions)
-                all_failure_reports.extend(failure_reports)
-            
-            pp.pprint(all_failure_reports)
-
-            if not all_failure_reports:
-                break
-            
-            patterns = self.correct_pattern_finding(all_failure_reports, patterns)
+        """Decompose grids into patterns."""
+        patterns = self.find_patterns()
         
-        self._build_pattern_trees(patterns)
-        self._build_schema_of_decomposition(patterns)
-
-    def _build_pattern_trees(self, patterns: Dict[str, Any]):
         for i, grid in enumerate(self.grids):
             extracted_patterns = []
-            for pattern in patterns["list_of_patterns"]:
-                pattern_name = list(pattern.keys())[0]
-                pattern_desc = pattern[pattern_name]
-                if i + 1 in pattern_desc["in which input matrices is it found?"]:
-                    extracted = self.extract_pattern(grid, pattern_desc)
-                    extracted_patterns.extend(extracted)
+            pattern_descriptions = []
             
-            self._build_pattern_tree(self.pattern_trees[i], extracted_patterns, patterns)
+            for pattern in patterns:
+                if i + 1 in pattern.matrices:
+                    extracted = extract_and_validate_patterns(grid, pattern, self.log_file)
+                    extracted_patterns.extend(extracted)
+                    pattern_descriptions.append(pattern)
+            
+            # Check for completeness
+            uncovered_cells = check_completeness(grid, extracted_patterns)
+            if uncovered_cells:
+                completeness_report = self.validator.report_generator.generate_completeness_report(grid, uncovered_cells)
+                # Handle the completeness failure (e.g., log it, send it back to LLM, etc.)
+                log_interaction(self.log_file, "Completeness check failed", completeness_report)
+                # You might want to add logic here to refine the patterns based on the completeness report
+            
+            # Check for overlap among all extracted patterns
+            check_grid = self.validator._calculate_check_grid(grid, extracted_patterns)
+            overlaps = self.validator._check_overlaps(check_grid)
+            if overlaps:
+                overlap_report = self.validator.report_generator.generate_overlap_report(grid, extracted_patterns, overlaps)
+                # Handle the overlap failure (e.g., log it, send it back to LLM, etc.)
+                log_interaction(self.log_file, "Overlap check failed", overlap_report)
+                # You might want to add logic here to refine the patterns based on the overlap report
+            
+            self._build_pattern_tree(self.pattern_trees[i], extracted_patterns, pattern_descriptions)
+        
+        self._build_schema_of_decomposition(patterns)
 
-    def _build_pattern_tree(self, tree: PatternTree, extracted_patterns: List[Matrix], patterns: Dict[str, Any]):
-        for i, pattern in enumerate(extracted_patterns):
-            pattern_desc = patterns["list_of_patterns"][i][list(patterns["list_of_patterns"][i].keys())[0]]
-            child = PatternNode(pattern, pattern_desc)
+    def _build_pattern_tree(self, tree: PatternTree, extracted_patterns: List[Matrix], pattern_descriptions: List[PatternDetails]):
+        """Build a pattern tree for a single grid."""
+        for pattern, description in zip(extracted_patterns, pattern_descriptions):
+            child = PatternNode(pattern, description)
             if tree.root.children is None:
                 tree.root.children = []
             tree.root.children.append(child)
 
-    def _build_schema_of_decomposition(self, patterns: Dict[str, Any]):
-        for pattern in patterns["list_of_patterns"]:
-            pattern_name = list(pattern.keys())[0]
-            pattern_desc = pattern[pattern_name]
-            child = PatternNode(Matrix(matrix=[]), pattern_desc)
+    def _build_schema_of_decomposition(self, patterns: List[PatternDetails]):
+        """Build the schema of decomposition."""
+        for pattern in patterns:
+            child = PatternNode(Matrix(matrix=[]), pattern)
             if self.schema.root.children is None:
                 self.schema.root.children = []
             self.schema.root.children.append(child)
-    
+
     

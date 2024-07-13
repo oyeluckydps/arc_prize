@@ -1,7 +1,9 @@
 import os
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Union, Iterator
-from pattern_description_signature import PatternDetails, Matrix
+
+from .pattern_description_signature import PatternDetails, Matrix
+
 import dspy
 
 # Define the Pydantic model for the output result (which can be a single matrix or a list of matrices)

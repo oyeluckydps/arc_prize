@@ -1,8 +1,11 @@
-import os
+import os, sys
 from typing import List, Optional, Dict
 import dspy
 from pydantic import BaseModel, Field, ConfigDict
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+from GUI.matplotlib.create_grid_image import create_grid_image
+from preprocess_sample_json import pp
 
 # Define Pydantic models
 class PatternDetails(BaseModel):
@@ -31,9 +34,14 @@ class PatternList(BaseModel):
 
 # Define the Pydantic model for matrix
 class Matrix(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, from_attributes=True)
     matrix: List[List[Optional[int]]] = Field(description="The grid with integers representing colors or None representing absence of anything.")
 
+    def show(self):
+        create_grid_image(self.matrix)
+    
+    def __str__(self):
+        return pp.pformat(self.matrix)
 
 class PatternDescriptionSignature(dspy.Signature):
     """
@@ -42,6 +50,9 @@ class PatternDescriptionSignature(dspy.Signature):
     question: str = dspy.InputField()
     matrices: Dict[str, Matrix] = dspy.InputField()
     patterns_description: PatternList = dspy.OutputField()
+
+    model_config = ConfigDict(from_attributes=True)
+    
 
     @staticmethod
     def sample_prompt() -> str:

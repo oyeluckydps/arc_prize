@@ -43,7 +43,7 @@ class DSPy(LLMConnector):
         if module is None and io_signature is None:
             self._one_shot_module = dspy.Predict(signature = self.io_signature)
         elif module is None and io_signature is not None:
-            self._one_shot_module = dspy.TypedPredict(signature = self.io_signature)
+            self._one_shot_module = dspy.TypedPredictor(signature = self.io_signature)
         else:
             self._one_shot_module = module
             self._one_shot_module.signature = self.io_signature
@@ -67,7 +67,7 @@ class DSPy(LLMConnector):
         if chat_module is None and io_signature is None:
             self._chat_module = dspy.Predict(signature = self.io_signature, lm=self.chat_model)
         elif chat_module is None and io_signature is not None:
-            self._chat_module = dspy.TypedPredict(signature = self.io_signature, lm=self.chat_model)
+            self._chat_module = dspy.TypedPredictor(signature = self.io_signature)
         else:
             self._chat_module = chat_module
             self._chat_module.signature = self.io_signature
@@ -83,11 +83,14 @@ class DSPy(LLMConnector):
 
     def chat(self, *args, **kwargs) -> str:
         all_responses = []
+        saved_config = dspy.settings.config
+        dspy.settings.configure(lm=self.chat_model, max_tokens=8196)
         if len(args) > 0:
             for arg in args:
                 all_responses.append(self._chat_module.config["lm"].basic_request(arg))
         if len(kwargs) > 0:
             all_responses.append(self._chat_module(**kwargs))
+        dspy.settings.configure(**saved_config)
         return all_responses if len(all_responses)>1 else all_responses[0]
     
     def chat_history(self) -> str:
