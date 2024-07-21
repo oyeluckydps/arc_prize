@@ -19,6 +19,10 @@ def extract_and_validate_patterns(grid: Matrix, pattern_description: PatternDeta
     prompt = PatternExtractionSignature.sample_prompt()
     while True:
         response = dspy_pattern_extractor.send_message(query=prompt, matrix=grid, pattern_description=pattern_description)
+        
+        print(dspy_pattern_extractor.model.history[-1]["prompt"])
+        print(dspy_pattern_extractor.model.history[-1]["response"].__dict__["content"][0].__dict__["text"])
+        
         log_interaction(log_file, prompt, response)
         
         extracted_patterns = list(response.output_pattern)
@@ -32,12 +36,6 @@ def extract_and_validate_patterns(grid: Matrix, pattern_description: PatternDeta
         The extracted patterns failed validation. Please correct the patterns based on the following failure reports:
         
         {failure_reports}
-        
-        Original grid:
-        {grid}
-        
-        Pattern description:
-        {pattern_description}
         """
         log_interaction(log_file, prompt, "Resubmitting to LLM")
 

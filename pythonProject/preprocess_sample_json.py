@@ -41,19 +41,26 @@ class SingleLinePrettyPrinter(pprint.PrettyPrinter):
     def _format(self, object, stream, indent, allowance, context, level):
         # super()._format(object, stream, indent, allowance, context, level)
         if is_list_of_lists_of_ints(object):
-            # Convert the list to a single line string representation
+            # Find the maximum width of all entries
+            max_width = max(len(str(item)) for sublist in object for item in sublist)
+
             stream.write('[')
-            for i, item in enumerate(object):
-                if i > 0:
+            for i, sublist in enumerate(object):
+                stream.write('[')
+                for j, item in enumerate(sublist):
+                    if j > 0:
+                        stream.write(', ')
+                    stream.write(f'{item:>{max_width}}')  # Right-align with padding
+                stream.write(']')
+                if i < len(object) - 1:
                     stream.write(',\n')
-                    stream.write(' '*(indent+1))
-                # self._format(item, stream, indent, allowance if i == len(object) - 1 else 1, context, level)
-                self._format(item, stream, indent, 1, context, level)
+                    stream.write(' ' * (indent + 1))  # Indent each sublist
             stream.write(']')
         elif contains_list_of_lists_of_ints(object):
             super()._format(object, stream, indent, self._width, context, level)
         else:
-            super()._format(object, stream, indent, allowance, context, level)
+            super()._format(object, stream, indent, 0, context, level)
+
 
 pp = SingleLinePrettyPrinter(width=180)
 

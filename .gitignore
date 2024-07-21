@@ -7,3 +7,4 @@ pythonProject/.gemini_key
 pythonProject/.anthropic_key
 ec
 *.vscode*
+*.txt
