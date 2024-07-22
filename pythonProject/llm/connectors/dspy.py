@@ -1,5 +1,6 @@
 from typing import Dict, List, Callable
 from pathlib import Path
+from pydantic import BaseModel
 
 import google.generativeai as genai
 from .dspy_LMs.google_chat import GoogleChat
@@ -7,7 +8,7 @@ import dspy
 
 
 from .llm_connector import LLMConnector
-
+from .utils_connectors.pydantic_bypass import replace_model_dump_json_recursive
 
 class DSPy(LLMConnector):
     '''
@@ -73,23 +74,39 @@ class DSPy(LLMConnector):
             self._chat_module.signature = self.io_signature
             self._chat_module.lm = self.chat_model
 
+    def replace_model_dump_json(self, kwargs: Dict) -> Dict:
+        """
+        This function replaces the model_dump_json method of the BaseModel class with a custom one that includes the description field.
+        This is done only for the input fields of the DSPy module, and recursively for all nested BaseModel instances.
+        """
+        new_kwargs = {}
+        for key, value in kwargs.items():
+            if key in self.io_signature.input_fields:
+                new_kwargs[key] = replace_model_dump_json_recursive(value)
+            else:
+                new_kwargs[key] = value
+        return new_kwargs
 
     def one_shot(self, *args, **kwargs):
+        new_kwargs = self.replace_model_dump_json(kwargs)
+
         saved_config = dspy.settings.config
         dspy.settings.configure(lm=self.model, max_tokens=8196)
-        response = self._one_shot_module(*args, **kwargs)  # I have to mention it again due to a bug in the DSPy library. It either takes the glovally set LM or locally passed and not the LM set in Predict/TypedPredict.
+        response = self._one_shot_module(*args, **new_kwargs)  # I have to mention it again due to a bug in the DSPy library. It either takes the glovally set LM or locally passed and not the LM set in Predict/TypedPredict.
         dspy.settings.configure(**saved_config)
         return response
 
     def chat(self, *args, **kwargs) -> str:
         all_responses = []
+        new_kwargs = self.replace_model_dump_json(kwargs)
+
         saved_config = dspy.settings.config
         dspy.settings.configure(lm=self.chat_model, max_tokens=8196)
         if len(args) > 0:
             for arg in args:
                 all_responses.append(self._chat_module.config["lm"].basic_request(arg))
-        if len(kwargs) > 0:
-            all_responses.append(self._chat_module(**kwargs))
+        if len(new_kwargs) > 0:
+            all_responses.append(self._chat_module(**new_kwargs))
         dspy.settings.configure(**saved_config)
         return all_responses if len(all_responses)>1 else all_responses[0]
     
