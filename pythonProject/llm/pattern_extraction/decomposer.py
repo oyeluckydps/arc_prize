@@ -2,11 +2,13 @@ import datetime
 from typing import List, Dict, Any
 from pathlib import Path
 
+from preprocess_sample_json import pp
+
 from .models import PatternTree, SchemaOfDecomposition, PatternNode
-from .utils_pattern_extraction import log_interaction, load_cached_data, save_cached_data, dspy_pattern_descriptor, dspy_pattern_extractor
+from .utils_pattern_extraction import log_interaction, load_cached_data, save_cached_data, dspy_detailed_pattern_descriptor, dspy_short_pattern_descriptor, dspy_pattern_extractor
 from .pattern_extractor import extract_and_validate_patterns
 from .validation import check_completeness
-from .pattern_description_signature import PatternDescriptionSignature, Matrix, PatternDetails
+from .pattern_description_signature import DetailedPatternDescriptionSignature, ShortPatternDescriptionSignature, Matrix, PatternDetails
 from .pattern_extraction_signature import PatternExtractionSignature
 from .globals import IS_DEBUG
 
@@ -29,24 +31,48 @@ class GridPatternExtractor:
         self.time = f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         self.log_file = f"pattern_extraction_{self.time}.txt"
 
+    def find_basic_patterns(self) -> List[PatternDetails]:
+        """Find patterns in the grids."""
+        prompt = ShortPatternDescriptionSignature.sample_prompt()
+        matrices = {f"{self.grids_type} Matrix {i+1}": grid for i, grid in enumerate(self.grids)}
+        
+        if IS_DEBUG:
+            filename = Path(__file__).parent / "sample_short_pattern_description.pickle"
+            cached_data = load_cached_data(filename)
+            if cached_data:
+                return cached_data
+            
+        response = dspy_short_pattern_descriptor.send_message(question=prompt, matrices=matrices)
+        log_interaction(self.log_file, prompt, response)
+        
+        if IS_DEBUG:
+            save_cached_data(filename, response.patterns_description.list_of_patterns)
+        
+        return response.patterns_description.list_of_patterns    
+
+
     def find_patterns(self) -> List[PatternDetails]:
         """Find patterns in the grids."""
-        prompt = PatternDescriptionSignature.sample_prompt()
+        prompt = DetailedPatternDescriptionSignature.sample_prompt()
         matrices = {f"{self.grids_type} Matrix {i+1}": grid for i, grid in enumerate(self.grids)}
         
         if IS_DEBUG:
             filename = Path(__file__).parent / "sample_pattern_description.pickle"
             cached_data = load_cached_data(filename)
             if cached_data:
+                print("Pattern descriptions loaded from cache")
                 return cached_data
             
-        response = dspy_pattern_descriptor.send_message(question=prompt, matrices=matrices)
+        response = dspy_detailed_pattern_descriptor.send_message(question=prompt, matrices=matrices)
         log_interaction(self.log_file, prompt, response)
-        
+        print(f"A total of {len(response.patterns_description.list_of_patterns)=} pattern descriptions were found in the grid through LLM.")
+
         if IS_DEBUG:
             save_cached_data(filename, response.patterns_description.list_of_patterns)
-        
+            print("Pattern descriptions saved to cache")
+
         return response.patterns_description.list_of_patterns
+
 
     def decompose_grids(self):
         """Decompose grids into patterns."""
@@ -56,8 +82,16 @@ class GridPatternExtractor:
             extracted_patterns = []
             pattern_descriptions = []
             
-            for pattern in patterns:
+            for j, pattern in enumerate(patterns):
+                # if j<2:
+                #     continue
                 if i + 1 in pattern.matrices:
+                    print("=" * 80)
+                    print(f"Extracting patterns in accordance to {j+1}th pattern description from grid {i+1}.")
+                    print(f"Pattern description: {pattern}")
+                    print(f"Grid: ")
+                    pp.pprint(grid.matrix)
+                    print("=" * 80)
                     extracted = extract_and_validate_patterns(grid, pattern, self.log_file)
                     extracted_patterns.extend(extracted)
                     pattern_descriptions.append(pattern)

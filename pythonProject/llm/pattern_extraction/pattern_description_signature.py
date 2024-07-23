@@ -45,7 +45,8 @@ class Matrix(BaseModel):
     # def __str__(self):
     #     return pp.pformat(self.matrix)
 
-class PatternDescriptionSignature(dspy.Signature):
+
+class DetailedPatternDescriptionSignature(dspy.Signature):
     """
     Defines the input and output fields for the pattern identification task.
     """
@@ -59,34 +60,82 @@ class PatternDescriptionSignature(dspy.Signature):
     @staticmethod
     def sample_prompt() -> str:
         prompt = """
-        Please identify non-overlapping and distinct common pattern descriptions or feature description across the given input matrices. 
-        Ensure that the patterns identified following the list of pattern descriptions provided by you are exhaustive 
-        such that if one were to remove the patterns one by one from a matrix, nothing should remain.
-        At the same time, ensure that the patterns that would be extracted following the description provided by you are distint 
-        i.e no pattern in the provided grids should match two or more descriptions.
-        Each pattern should be uniquely identifiable by only one description.
-        List any unique patterns or exceptions that do not conform to these common patterns. 
-        
-        In this list of patterns descriptions:
-        Focus only on describing the physical patterns or features you observe in the matrices.
-        Ensure that the patterns identified are non-overlapping, distinct, and exhaustive such that if one were to remove all identified patterns one by one from any matrix, nothing should remain.
-        Try to find the generic pattern descriptions that adhere to many patterns. 
-        If a pattern satisfies a pattern description already listed then it shouldn't satisfy pattern description for any other entry. 
-        If you feel that some pattern might be missed due to above restrisction on the pattern description formation then try to make the pattern description as generic as possible so that it accounts for the left out patterns.
-        
-        Remember:
-        A pattern description can help find multiple patterns in a single matrix.
-        But no two or more pattern descriptions can describe the same pattern.
-        
-        Examples:
-        If you see a background across all the input matrices, mention "background" as a single pattern.
-        If you see square shapes of different sizes that can be generalized, mention "squares."
-        If you observe random patterns at the same location in the matrices, mention "random pattern at the particular corner of matrix."
-        
-        Here are the input matrices:
+            Analyze the given input matrices and provide a list of pattern descriptions that meet the following criteria:
+
+            1. Exhaustive: The patterns described should cover all elements in each matrix. If all described patterns were removed from a matrix, nothing should remain.
+
+            2. Distinct and non-overlapping: Each pattern should be uniquely identifiable by only one description. No pattern should match multiple descriptions.
+
+            3. Generic: Aim for descriptions that can apply to multiple instances across the matrices, rather than overly specific descriptions.
+
+            4. Physical features only: Focus on observable physical patterns or features in the matrices, not abstract concepts.
+
+            5. Inclusive: If a pattern doesn't fit neatly into other categories, create a more general description that can include it without overlapping with existing descriptions.
+
+            6. Common across matrices: Prioritize pattern descriptions that are present across all or most matrices, not just in one or two.
+
+            Guidelines:
+            - A single description can identify multiple patterns within one matrix.
+            - However, no single pattern should be described by multiple descriptions.
+            - Include common elements across all matrices (e.g., background) as a single pattern if applicable.
+            - Generalize similar shapes or elements of different sizes when possible (e.g., "squares of varying sizes").
+            - Note consistent positioning of elements (e.g., "random pattern in top-left corner").
+            - Before adding a new pattern description, carefully consider if the patterns it would describe are already covered by an existing description.
+
+            Provide your analysis based on the following input matrices:
         """
         return prompt
     
 
+class ShortDetail(BaseModel):
+    """
+    Represents the details of a pattern found in matrices. 
+    """
+    model_config = ConfigDict(populate_by_name=True)
+    
+    name: str = Field(..., description="Give a suitable name to this pattern description.")
+    pattern_description: str = Field(..., description="Provide a description for the patterns.")
+
+
+class ShortPatternList(BaseModel):
+    """
+    Represents a list of pattern descriptions found in matrices.
+    """
+    model_config = ConfigDict(populate_by_name=True)
+    
+    list_of_patterns: List[ShortDetail] = Field(..., description="List all the pattern descriptions of the patterns found in the matrices")
     
 
+class ShortPatternDescriptionSignature(dspy.Signature):
+    """
+    Defines the input and output fields for the pattern identification task.
+    """
+    question: str = dspy.InputField()
+    matrices: Dict[str, Matrix] = dspy.InputField()
+    patterns_description: ShortPatternList = dspy.OutputField()
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+    @staticmethod
+    def sample_prompt() -> str:
+        prompt = """
+            Analyze the provided matrices and identify distinct pattern descriptions. Focus on:
+
+            1. Physical resemblance and visual representations in the matrices.
+            2. Easily identifiable patterns such as squares, circles, spirals, etc.
+            3. Complex shapes that occur together or complement each other.
+            4. Noisy patterns.
+            5. Patterns that always occur together across all matrices.
+
+            Guidelines:
+            - Describe only patterns that are visually apparent and consistent across matrices.
+            - Keep your list of pattern descriptions concise.
+            - Aim for 2-3 types of patterns; rarely exceed 5 types.
+            - Ensure each pattern description is unique and non-overlapping.
+            - Make pattern descriptions very distinct from each other.
+            - If two pattern descriptions are similar, combine them into a more generic description that encompasses both.
+
+            List your pattern descriptions below:
+        """
+        return prompt

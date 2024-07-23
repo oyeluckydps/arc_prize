@@ -21,7 +21,7 @@ class FailureReportGenerator:
 
     def generate_pattern_not_present_report(self, original_grid: Matrix, extracted_patterns: List[Matrix]) -> str:
         """Generate a report for patterns not present in the original grid."""
-        report = "One or more extracted patterns are not present in the original grid:\n\n"
+        report = "The following mentioned extracted patterns are not present in the original grid:\n\n"
         report += f"Original grid:\n{original_grid.matrix}\n\n"
         for i, pattern in enumerate(extracted_patterns):
             if not self._is_pattern_in_grid(pattern, original_grid):

@@ -31,9 +31,9 @@ class PatternExtractionSignature(dspy.Signature):
         Your task is to identify this pattern in the provided matrix. Extract the pattern from the matrix, preserving its digits and positions. Replace all other entries that are not a part of the pattern in the matrix with None.
         Present your result as a list of lists like this:
         [
-        [0, None, None, 0],
-        [None, 0, 0, None],
-        [0, None, None, 0]
+        [0, null, null, 0],
+        [null, 0, 0, null],
+        [0, null, null, 0]
         ]
         Please process this matrix and output the result showing only the identified pattern.
         If there are multiple patterns to be found in the matrix that satisfy the description for the pattern then output all of these matrices as a list of matrices.

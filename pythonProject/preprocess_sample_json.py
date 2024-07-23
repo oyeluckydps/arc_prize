@@ -19,9 +19,9 @@ def is_list_of_lists_of_ints(obj):
     if not isinstance(obj, list):
         return False
     is_child_list = [isinstance(sublist, list) for sublist in obj]
-    if not all(is_child_list):
+    if not all(is_child_list) or len(is_child_list) == 0:
         return False
-    is_child_of_child_int = [isinstance(item, int) for sublist in obj for item in sublist]
+    is_child_of_child_int = [isinstance(item, int) or item is None for sublist in obj for item in sublist]
     return all(is_child_of_child_int)
 
 def contains_list_of_lists_of_ints(json_obj):
@@ -39,18 +39,19 @@ def contains_list_of_lists_of_ints(json_obj):
 
 class SingleLinePrettyPrinter(pprint.PrettyPrinter):
     def _format(self, object, stream, indent, allowance, context, level):
-        # super()._format(object, stream, indent, allowance, context, level)
         if is_list_of_lists_of_ints(object):
-            # Find the maximum width of all entries
-            max_width = max(len(str(item)) for sublist in object for item in sublist)
-
+            # Find the maximum width of all entries, considering None as an empty string
+            max_width = max([len(str(item)) if item is not None else 0 for sublist in object for item in sublist])
             stream.write('[')
             for i, sublist in enumerate(object):
                 stream.write('[')
                 for j, item in enumerate(sublist):
                     if j > 0:
                         stream.write(', ')
-                    stream.write(f'{item:>{max_width}}')  # Right-align with padding
+                    if item is None:
+                        stream.write(' ' * max_width)  # Write spaces for None
+                    else:
+                        stream.write(f'{item:>{max_width}}')  # Right-align with padding
                 stream.write(']')
                 if i < len(object) - 1:
                     stream.write(',\n')
