@@ -28,7 +28,8 @@ class PatternExtractionSignature(dspy.Signature):
     def sample_prompt() -> str:
         prompt = """
         Given the following pattern description in JSON format:
-        Your task is to identify this pattern in the provided matrix. Extract the pattern from the matrix, preserving its digits and positions. Replace all other entries that are not a part of the pattern in the matrix with None.
+        Your task is to identify this pattern in the provided matrix. Extract the pattern from the matrix, preserving its digits and positions. 
+        Replace all other entries that are not a part of the pattern in the matrix with null.
         Present your result as a list of lists like this:
         [
         [0, null, null, 0],

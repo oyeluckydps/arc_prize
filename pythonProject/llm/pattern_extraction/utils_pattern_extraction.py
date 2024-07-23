@@ -6,7 +6,9 @@ from typing import Any, Optional
 
 from ..connectors.dspy import DSPy
 from ..connectors.dspy_LMs.claude_chat import ClaudeChat
-from .pattern_description_signature import DetailedPatternDescriptionSignature, ShortPatternDescriptionSignature
+from .pattern_description_signature import DetailedPatternDescriptionSignature
+from .short_pattern_description_signature import ShortPatternDescriptionSignature
+from .most_relevant_pattern_description_signature import MostRelevantPatternDescriptionSignature
 from .pattern_extraction_signature import PatternExtractionSignature
 
 claude = dspy.Claude("claude-3-5-sonnet-20240620", api_key=os.environ.get('ANTHROPIC_API_KEY'))
@@ -15,6 +17,7 @@ claude_chat2 = ClaudeChat("claude-3-5-sonnet-20240620", api_key=os.environ.get('
 
 dspy_detailed_pattern_descriptor = DSPy(strategy_method='one_shot', system_info='', model=claude, chat_model=claude_chat1, io_signature=DetailedPatternDescriptionSignature)
 dspy_short_pattern_descriptor = DSPy(strategy_method='one_shot', system_info='', model=claude, chat_model=claude_chat1, io_signature=ShortPatternDescriptionSignature)
+dspy_most_relevant_pattern_descriptor = DSPy(strategy_method='one_shot', system_info='', model=claude, chat_model=claude_chat1, io_signature=MostRelevantPatternDescriptionSignature)
 dspy_pattern_extractor = DSPy(strategy_method='one_shot', system_info='', model=claude, chat_model=claude_chat2, io_signature=PatternExtractionSignature)
 
 
