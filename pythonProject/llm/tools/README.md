@@ -1,1 +1,0 @@
-**** The following details are scraped from the ARC Prize Challenge 2024 - https://www.arc-prize.com/ website ****
