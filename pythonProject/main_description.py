@@ -1,4 +1,4 @@
-from pattern_description_signature import *
+from llm.pattern_extraction.pattern_description_signature import *
 
 def identify_patterns(question: str, matrices: Dict[str, List[List[int]]]) -> PatternList:
     """
@@ -15,7 +15,7 @@ def identify_patterns(question: str, matrices: Dict[str, List[List[int]]]) -> Pa
     dspy.settings.configure(lm=claude)
 
     # Create a predictor using the PatternSignature
-    predictor = dspy.TypedPredictor(PatternDescriptionSignature)
+    predictor = dspy.TypedPredictor(DetailedPatternDescriptionSignature)
 
     # Predict patterns based on the question
     solution = predictor(question=question, matrices=matrices)
@@ -27,7 +27,7 @@ def main():
     Main function to demonstrate pattern identification.
     """
     # Sample question describing the matrices and pattern identification task
-    sample_question = PatternDescriptionSignature.sample_prompt()
+    sample_question = DetailedPatternDescriptionSignature.sample_prompt()
 
     sample_matrices = {
         "Matrix 2": Matrix(matrix=
