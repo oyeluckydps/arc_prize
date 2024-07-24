@@ -18,6 +18,7 @@ class PatternDetails(BaseModel):
     
     name: str = Field(..., description="Give a suitable name to this pattern")
     matrices: Optional[List[int]] = Field(..., description="In which matrices is this pattern found?")
+    extraction: str = Field(..., description="If I need to extract this pattern from the matrices then how should I do it? Describe a brief algorithm that specifies the exact method to extract patterns adhering to this description.")
     prominent_reason: Optional[str] = Field(..., description="What makes it a prominent and outstanding pattern?")
     location: Optional[str] = Field(..., description="Where is the pattern to be found?")
     unique_identifier: Optional[str] = Field(..., description="How to uniquely identify this pattern if an input matrix is provided?")

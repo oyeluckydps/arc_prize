@@ -48,7 +48,14 @@ class MostRelevantPatternDescriptionSignature(dspy.Signature):
             4. A random pattern in the top-left corner.
             
             Use your imagination and creativity to describe most of the patterns under a single generic description. 
-            It is also possible that all the patterns on the provided matrices are covered by a single description.
+            
+            It is also possible that all the patterns on the provided matrices are covered by a single description 
+            but in this case, you must be very sure that one description that is not very generic accounts for all the patterns.
+            If you can be slightly specific and find a pattern or group of patterns that are different from other patterns or cells then mention it.
+            However, if you are sure that all the patterns are covered by a single description then you can mention the name as "COMPLETE_PATTERN_SET".
+
+            Remember you need to given description of only one pattern and the it should be unambiguos. 
+            An LLM or any automated machine should be able to read your description and unambiguously identify the patterns that is being described from the matrices.
 
             Provide your analysis based on the following input matrices:
         """
