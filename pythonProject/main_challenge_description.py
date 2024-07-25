@@ -1,0 +1,19 @@
+from llm.challenge_details.training_set_description import TrainingSetDescription, training_set_description_obj
+from llm.challenge_details.test_set_description import TestSetDescription, test_set_description_obj
+from llm.challenge_details.output_grid_description import OutputGridDescription, output_grid_description_obj
+from llm.challenge_details.input_output_pair_description import InputOutputPairDescription, input_output_pair_description_obj
+from llm.challenge_details.input_grid_description import InputGridDescription, input_grid_description_obj
+from llm.challenge_details.color_schema_description import ColorSchemaDescription, color_schema_description_obj
+
+from llm.challenge_details.challenge_description import ChallengeDescription, challenge_description_obj
+from llm.challenge_details.components_description import ComponentsDescription, components_description_obj
+
+# print(training_set_description_obj)
+# print(test_set_description_obj)
+# print(output_grid_description_obj)
+# print(input_output_pair_description_obj)
+# print(input_grid_description_obj)
+# print(color_schema_description_obj)
+# print(components_description_obj)
+print(challenge_description_obj)
+

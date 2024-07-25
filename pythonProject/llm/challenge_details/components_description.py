@@ -1,17 +1,17 @@
 from pydantic import BaseModel, Field, ConfigDict
-from training_set_description import TrainingSetDescription, training_set_description_obj
-from test_set_description import TestSetDescription, test_set_description_obj
-from input_output_pair_description import InputOutputPairDescription, input_output_pair_description_obj
-from input_grid_description import InputGridDescription, input_grid_description_obj
-from output_grid_description import OutputGridDescription, output_grid_description_obj
-from color_schema_description import ColorSchemaDescription, color_schema_description_obj
+from .training_set_description import TrainingSetDescription, training_set_description_obj
+from .test_set_description import TestSetDescription, test_set_description_obj
+from .input_output_pair_description import InputOutputPairDescription, input_output_pair_description_obj
+from .input_grid_description import InputGridDescription, input_grid_description_obj
+from .output_grid_description import OutputGridDescription, output_grid_description_obj
+from .color_schema_description import ColorSchemaDescription, color_schema_description_obj
 
 class ComponentsDescription(BaseModel):
     """
     Describes all components used in the ARC challenge.
     """
     model_config = ConfigDict(populate_by_name=True)
-    
+
     training_set: TrainingSetDescription = Field(..., description="Description of the training set")
     test_set: TestSetDescription = Field(..., description="Description of the test set")
     input_output_pair: InputOutputPairDescription = Field(..., description="Description of input-output pairs")

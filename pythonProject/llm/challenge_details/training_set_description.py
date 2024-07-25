@@ -12,7 +12,7 @@ class TrainingSetDescription(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     
     explanation: str = Field(..., description="Explanation of the training set")
-    example: Dict[str, List[Dict[str, Matrix]]] = Field(..., description="Example of a training set")
+    example: List[InputOutputPair] = Field(..., description="Example of a training set")
 
     def __str__(self) -> str:
         return f"""TrainingSetDescription:
@@ -26,8 +26,7 @@ training_set_description_obj = TrainingSetDescription(
     Generally, 2-10 input output pairs are provided in the training grid. 
     It will be the job of the solver to understand the transformation taking place on the input matrix/grid that leads to the corresponding output matrix/grid. 
     It is expected that the solver would later apply the same transformation on input matrix of the test set to generate the corresponding output grid/matrix.""",
-example={
-        "train": [
+    example=[
             InputOutputPair(
                 input=Matrix(matrix=[
                     [0, 2, 2, 0, 0, 0, 0, 8, 0, 0, 0, 0],
@@ -96,6 +95,5 @@ example={
                 output=Matrix(matrix=[[3]])
             )
         ]
-    }
 )
 

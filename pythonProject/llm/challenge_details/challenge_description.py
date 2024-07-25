@@ -1,8 +1,8 @@
 # File: challenge_description.py
 
 from pydantic import BaseModel, Field, ConfigDict
-from components_description import ComponentsDescription, components_description_obj
-from character_description import CharacterDescription, characters
+from .components_description import ComponentsDescription, components_description_obj
+from .character_description import CharacterDescription, characters
 from typing import List
 
 class ChallengeDescription(BaseModel):

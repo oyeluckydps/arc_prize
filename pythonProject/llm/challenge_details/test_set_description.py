@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Dict
+from typing import List, Union
 
 from custom_types.matrix import Matrix
 
@@ -11,7 +11,7 @@ class TestSetDescription(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     
     explanation: str = Field(..., description="Explanation of the test set")
-    example: Dict[str, List[Matrix]] = Field(..., description="Example of a test set")
+    example: Union[Matrix, List[Matrix]] = Field(..., description="Example of a test set")
 
     def __str__(self) -> str:
         return f"""TestSetDescription:
@@ -24,8 +24,7 @@ test_set_description_obj = TestSetDescription(
         """The challenger provides a training and a test set. The input output pair of grids/matrices in the training set creates examples required to solve the puzzle. 
         The test grid has one or two input matrix/grid only. The output grid is not provided and it is the job of the solver to find 
         the output matrix corresponding to the provided input matrix of the training set.""",
-    example={
-        "test": [
+    example=\
             Matrix(matrix=[
                 [0, 0, 0, 3, 3, 0, 0, 0, 0, 7, 0, 0, 0],
                 [0, 0, 0, 3, 3, 0, 0, 0, 0, 7, 0, 0, 0],
@@ -39,7 +38,5 @@ test_set_description_obj = TestSetDescription(
                 [0, 0, 0, 3, 3, 0, 0, 0, 0, 7, 0, 0, 0],
                 [0, 0, 0, 3, 3, 0, 0, 0, 0, 7, 0, 0, 0]
             ])
-        ]
-    }
 )
 
