@@ -4,7 +4,7 @@ import json
 import os, sys
 
 from preprocess_sample_json import pp
-from llm.pattern_extraction.utils_pattern_extraction import claude
+from llm.utils import claude
 from llm.connectors.dspy import DSPy
 
 import dspy

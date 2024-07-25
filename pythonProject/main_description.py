@@ -1,4 +1,5 @@
-from llm.pattern_extraction.pattern_description_signature import *
+from llm.pattern_extraction.signatures.pattern_description_signature import *
+import dspy
 
 def identify_patterns(question: str, matrices: Dict[str, List[List[int]]]) -> PatternList:
     """

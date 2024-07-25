@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from .pattern_description_signature import Matrix
+from .signatures.pattern_description_signature import Matrix
 from preprocess_sample_json import pp
 
 class FailureReportGenerator:

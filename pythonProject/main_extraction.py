@@ -1,4 +1,4 @@
-from llm.pattern_extraction.pattern_extraction_signature import *
+from llm.pattern_extraction.signatures.pattern_extraction_signature import *
 import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from GUI.matplotlib.create_grid_image import create_grid_image

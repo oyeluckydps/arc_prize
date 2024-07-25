@@ -4,12 +4,12 @@ import pickle
 from pathlib import Path
 from typing import Any, Optional
 
-from ..connectors.dspy import DSPy
-from ..connectors.dspy_LMs.claude_chat import ClaudeChat
-from .pattern_description_signature import DetailedPatternDescriptionSignature
-from .short_pattern_description_signature import ShortPatternDescriptionSignature
-from .most_relevant_pattern_description_signature import MostRelevantPatternDescriptionSignature
-from .pattern_extraction_signature import PatternExtractionSignature
+from .connectors.dspy import DSPy
+from .connectors.dspy_LMs.claude_chat import ClaudeChat
+from .pattern_extraction.signatures.pattern_description_signature import DetailedPatternDescriptionSignature
+from .pattern_extraction.short_pattern_description_signature import ShortPatternDescriptionSignature
+from .pattern_extraction.signatures.most_relevant_pattern_description_signature import MostRelevantPatternDescriptionSignature
+from .pattern_extraction.signatures.pattern_extraction_signature import PatternExtractionSignature
 
 claude = dspy.Claude("claude-3-5-sonnet-20240620", api_key=os.environ.get('ANTHROPIC_API_KEY'))
 claude_chat1 = ClaudeChat("claude-3-5-sonnet-20240620", api_key=os.environ.get('ANTHROPIC_API_KEY'))

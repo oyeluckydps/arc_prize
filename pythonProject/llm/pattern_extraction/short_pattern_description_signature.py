@@ -2,7 +2,7 @@ import os, sys
 from typing import List, Optional, Dict
 import dspy
 from pydantic import BaseModel, Field, ConfigDict
-from .pattern_description_signature import Matrix
+from .signatures.pattern_description_signature import Matrix
 
 class ShortDetail(BaseModel):
     """

@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 from llm.pattern_extraction.decomposer import GridPatternExtractor
-from llm.pattern_extraction.pattern_description_signature import Matrix
+from llm.pattern_extraction.signatures.pattern_description_signature import Matrix
 from utils.file_handling import load_json_by_page
 
 def main():

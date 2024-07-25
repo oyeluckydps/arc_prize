@@ -5,13 +5,13 @@ from pathlib import Path
 from preprocess_sample_json import pp
 
 from .models import PatternTree, SchemaOfDecomposition, PatternNode
-from .utils_pattern_extraction import log_interaction, load_cached_data, save_cached_data, dspy_detailed_pattern_descriptor, dspy_short_pattern_descriptor, dspy_pattern_extractor, dspy_most_relevant_pattern_descriptor
+from ..utils import log_interaction, load_cached_data, save_cached_data, dspy_detailed_pattern_descriptor, dspy_short_pattern_descriptor, dspy_pattern_extractor, dspy_most_relevant_pattern_descriptor
 from .pattern_extractor import extract_and_validate_patterns
 from .validation import check_completeness
-from .pattern_description_signature import DetailedPatternDescriptionSignature, Matrix, PatternDetails
-from .most_relevant_pattern_description_signature import MostRelevantPatternDescriptionSignature
+from .signatures.pattern_description_signature import DetailedPatternDescriptionSignature, Matrix, PatternDetails
+from .signatures.most_relevant_pattern_description_signature import MostRelevantPatternDescriptionSignature
 from .short_pattern_description_signature import ShortPatternDescriptionSignature
-from .pattern_extraction_signature import PatternExtractionSignature
+from .signatures.pattern_extraction_signature import PatternExtractionSignature
 from .globals import IS_DEBUG
 
 

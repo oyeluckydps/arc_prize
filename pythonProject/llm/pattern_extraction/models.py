@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 from pydantic import BaseModel, Field, ConfigDict
-from .pattern_description_signature import Matrix
+from custom_types.matrix import Matrix
 
 @dataclass
 class PatternNode:

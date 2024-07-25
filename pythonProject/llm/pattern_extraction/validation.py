@@ -1,5 +1,5 @@
 from typing import List, Tuple, Optional
-from .pattern_description_signature import Matrix
+from .signatures.pattern_description_signature import Matrix
 from .failure_reports import FailureReportGenerator
 
 def validate_patterns(original_grid: Matrix, extracted_patterns: List[Matrix]) -> Optional[str]:

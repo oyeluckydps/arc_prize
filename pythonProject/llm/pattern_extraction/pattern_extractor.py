@@ -1,10 +1,10 @@
 from typing import List
 
 from preprocess_sample_json import pp
-from .pattern_description_signature import Matrix, PatternDetails
-from .pattern_extraction_signature import PatternExtractionSignature
+from .signatures.pattern_description_signature import Matrix, PatternDetails
+from .signatures.pattern_extraction_signature import PatternExtractionSignature
 from .validation import validate_patterns
-from .utils_pattern_extraction import log_interaction, dspy_pattern_extractor
+from ..utils import log_interaction, dspy_pattern_extractor
 
 def extract_and_validate_patterns(grid: Matrix, pattern_description: PatternDetails, log_file: str) -> List[Matrix]:
     """
