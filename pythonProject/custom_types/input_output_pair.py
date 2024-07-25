@@ -13,12 +13,12 @@ class InputOutputPair(BaseModel):
     input: Matrix = Field(..., description="The input matrix")
     output: Matrix = Field(..., description="The output matrix")
 
-    def print(self) -> str:
+    def __str__(self) -> str:
         return f"""InputOutputPair:
         Input:
-        {self.input}
+        {str(self.input)}
         Output:
-        {self.output}"""
+        {str(self.output)}"""
 
     def show(self):
         """

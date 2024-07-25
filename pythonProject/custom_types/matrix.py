@@ -11,7 +11,7 @@ class Matrix(BaseModel):
     def show(self):
         create_grid_image(self.matrix)
     
-    def print(self):
+    def __str__(self) -> str:
         return pp.pformat(self.matrix)
     
     

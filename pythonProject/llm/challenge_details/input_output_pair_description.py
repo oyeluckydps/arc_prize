@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import Dict
 
 from custom_types.matrix import Matrix
+from custom_types.input_output_pair import InputOutputPair
 
 
 class InputOutputPairDescription(BaseModel):
@@ -11,12 +12,12 @@ class InputOutputPairDescription(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     
     explanation: str = Field(..., description="Explanation of the input-output pair")
-    example: Dict[str, Matrix] = Field(..., description="Example of an input-output pair")
+    example: InputOutputPair = Field(..., description="Example of an input-output pair")
 
     def __str__(self) -> str:
         return f"""InputOutputPairDescription:
-Explanation: {self.explanation}
-Example: {self.example}"""
+            Explanation: {self.explanation}
+            Example: {self.example}"""
 
 # Sample object
 input_output_pair_description_obj = InputOutputPairDescription(
@@ -27,8 +28,7 @@ input_output_pair_description_obj = InputOutputPairDescription(
     apply them on input matrix of test set to form the corresponding output matrix. 
     An input-output pair may be formed by the solver after it has solved the test set too. 
     This input output pair is generally the output from the challenge for a given puzzle.""",
-    example={
-        "input": Matrix(matrix=[
+    example=InputOutputPair(input=Matrix(matrix=[
             [0, 2, 2, 0, 0, 0, 0, 8, 0, 0, 0, 0],
             [0, 2, 2, 0, 0, 0, 0, 8, 0, 0, 0, 0],
             [3, 2, 2, 3, 3, 3, 3, 8, 3, 3, 3, 3],
@@ -38,6 +38,7 @@ input_output_pair_description_obj = InputOutputPairDescription(
             [0, 2, 2, 0, 0, 0, 0, 8, 0, 0, 0, 0],
             [0, 2, 2, 0, 0, 0, 0, 8, 0, 0, 0, 0]
         ]),
-        "output": Matrix(matrix=[[6]])
-    }
+        output=Matrix(matrix=[[6]])
+    )
 )
+

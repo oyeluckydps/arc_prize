@@ -11,7 +11,7 @@ from llm.challenge_details.components_description import ComponentsDescription, 
 # print(training_set_description_obj)
 # print(test_set_description_obj)
 # print(output_grid_description_obj)
-# print(input_output_pair_description_obj)
+print(input_output_pair_description_obj)
 # print(input_grid_description_obj)
 # print(color_schema_description_obj)
 # print(components_description_obj)
