@@ -2,7 +2,8 @@ import os
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Union, Iterator
 
-from .pattern_description_signature import PatternDetails, Matrix
+from .pattern_description_signature import PatternDetails
+from custom_types.matrix import Matrix
 
 import dspy
 
