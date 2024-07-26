@@ -38,6 +38,8 @@ def load_cached_data(filename: Path) -> Optional[Any]:
 
 def save_cached_data(filename: Path, data: Any):
     """Save data to a cache file."""
+    if not filename.parent.exists():
+        filename.parent.mkdir(parents=True)
     with open(filename, "wb") as file:
         pickle.dump(data, file)
 

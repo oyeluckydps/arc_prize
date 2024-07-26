@@ -3,7 +3,7 @@ from typing import List, Optional, Dict
 import dspy
 from pydantic import BaseModel, Field, ConfigDict
 from custom_types.matrix import Matrix
-from custom_types.input_output_pair import input_output_pair
+from custom_types.input_output_pair import InputOutputPair
 from ...pattern_extraction.signatures.pattern_description_signature import PatternDetails
 from ...challenge_details.challenge_description import ChallengeDescription, challenge_description_obj
 
@@ -19,7 +19,7 @@ class IOBasedPatternDescription(dspy.Signature):
     """
     challenge_description: ChallengeDescription = dspy.InputField(default=challenge_description_obj)
     question: str = dspy.InputField()
-    input_ouptut_pairs: List[input_output_pair] = dspy.InputField()
+    input_ouptut_pairs: List[InputOutputPair] = dspy.InputField()
     probable_causation: str = dspy.InputField()
     FOR_MATRIX_TYPE :str = dspy.InputField()
 

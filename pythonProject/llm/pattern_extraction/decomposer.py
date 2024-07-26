@@ -12,7 +12,7 @@ from .signatures.pattern_description_signature import DetailedPatternDescription
 from .signatures.most_relevant_pattern_description_signature import MostRelevantPatternDescriptionSignature
 from .short_pattern_description_signature import ShortPatternDescriptionSignature
 from .signatures.pattern_extraction_signature import PatternExtractionSignature
-from .globals import IS_DEBUG
+from globals import IS_DEBUG
 
 
 class GridPatternExtractor:
