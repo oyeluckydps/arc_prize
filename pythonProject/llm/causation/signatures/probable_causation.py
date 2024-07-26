@@ -13,7 +13,7 @@ from ...connectors.dspy_LMs.claude_chat import ClaudeChat
 claude = dspy.Claude("claude-3-5-sonnet-20240620", api_key=os.environ.get('ANTHROPIC_API_KEY'))
 claude_chat = ClaudeChat("claude-3-5-sonnet-20240620", api_key=os.environ.get('ANTHROPIC_API_KEY'))
 
-class IOBasedProbableCausation(dspy.Signature):
+class ProbableCausation(dspy.Signature):
     """
     Defines the input and output fields for the pattern identification task.
     """
@@ -49,4 +49,4 @@ class IOBasedProbableCausation(dspy.Signature):
         return prompt
     
 
-probable_causation_chat = DSPy(strategy_method='one_shot', system_info='', model=claude, chat_model=claude_chat, io_signature=IOBasedProbableCausation)
+probable_causation_chat = DSPy(strategy_method='one_shot', system_info='', model=claude, chat_model=claude_chat, io_signature=ProbableCausation)
