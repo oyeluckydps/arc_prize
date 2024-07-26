@@ -15,10 +15,10 @@ class InputOutputPair(BaseModel):
 
     def __str__(self) -> str:
         return f"""InputOutputPair:
-        Input:
-        {str(self.input)}
-        Output:
-        {str(self.output)}"""
+Input:
+{str(self.input)}
+Output:
+{str(self.output)}"""
 
     def show(self):
         """

@@ -2,7 +2,8 @@
 from typing import List, Optional, Dict
 import dspy
 from pydantic import BaseModel, Field, ConfigDict
-from .pattern_description_signature import Matrix, PatternDetails
+from .pattern_description_signature import PatternDetails
+from custom_types.matrix import Matrix
 
 
 class MostRelevantPatternDescriptionSignature(dspy.Signature):
@@ -14,7 +15,7 @@ class MostRelevantPatternDescriptionSignature(dspy.Signature):
     pattern_description: PatternDetails = dspy.OutputField()
 
     model_config = ConfigDict(from_attributes=True)
-    
+
 
     @staticmethod
     def sample_prompt() -> str:
@@ -37,7 +38,8 @@ class MostRelevantPatternDescriptionSignature(dspy.Signature):
                 (e.g., "squares of varying sizes", "quadrilaterals instead of separating squares and rectangels into two patterns").
             - Note consistent positioning of elements (e.g., "random pattern in top-left corner").
 
-            The entries in the matrices are either None/empty where it means absernce of anything. Else it can be a digit between 0 and 9 which represent difference colors.
+            The entries in the matrices are either None/empty where it means absernce of anything. 
+            Else it can be a digit between 0 and 9 which represent difference colors.
             For example 0 represents black color, 1 represents red color, 2 represents green color and so on. Try to find the patterns based on these phenomena.
 
             Some examples of pattern descriptions:
@@ -46,7 +48,7 @@ class MostRelevantPatternDescriptionSignature(dspy.Signature):
             2. A spiral pattern with a background of random colors.
             3. A circle with a background of random colors.
             4. A random pattern in the top-left corner.
-            
+
             Use your imagination and creativity to describe most of the patterns under a single generic description. 
             
             It is also possible that all the patterns on the provided matrices are covered by a single description 

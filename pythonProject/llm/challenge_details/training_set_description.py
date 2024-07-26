@@ -16,8 +16,8 @@ class TrainingSetDescription(BaseModel):
 
     def __str__(self) -> str:
         return f"""TrainingSetDescription:
-Explanation: {self.explanation}
-Example: {self.example}"""
+        Explanation: {self.explanation}
+        Example: {"".join([f"Input Output Pair {ind}:\n" + str(ex) + "\n" for ind, ex in enumerate(self.example)])}"""
 
 # Sample object
 training_set_description_obj = TrainingSetDescription(
@@ -39,20 +39,6 @@ training_set_description_obj = TrainingSetDescription(
                     [0, 2, 2, 0, 0, 0, 0, 8, 0, 0, 0, 0]
                 ]),
                 output=Matrix(matrix=[[6]])
-            ),
-            InputOutputPair(
-                input=Matrix(matrix=[
-                    [0, 0, 0, 4, 4, 0, 0, 0, 8, 0, 0],
-                    [0, 0, 0, 4, 4, 0, 0, 0, 8, 0, 0],
-                    [3, 3, 3, 4, 4, 3, 3, 3, 8, 3, 3],
-                    [0, 0, 0, 4, 4, 0, 0, 0, 8, 0, 0],
-                    [0, 0, 0, 4, 4, 0, 0, 0, 8, 0, 0],
-                    [6, 6, 6, 6, 6, 6, 6, 6, 8, 6, 6],
-                    [6, 6, 6, 6, 6, 6, 6, 6, 8, 6, 6],
-                    [0, 0, 0, 4, 4, 0, 0, 0, 8, 0, 0],
-                    [0, 0, 0, 4, 4, 0, 0, 0, 8, 0, 0]
-                ]),
-                output=Matrix(matrix=[[8]])
             ),
             InputOutputPair(
                 input=Matrix(matrix=[
