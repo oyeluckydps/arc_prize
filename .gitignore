@@ -8,3 +8,4 @@ pythonProject/.anthropic_key
 ec
 *.vscode*
 *.txt
+pythonProject/cache/*

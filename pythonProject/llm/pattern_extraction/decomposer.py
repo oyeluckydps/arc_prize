@@ -31,7 +31,7 @@ class GridPatternExtractor:
         self.pattern_trees: List[PatternTree] = [PatternTree(grid) for grid in grids]
         self.schema = SchemaOfDecomposition()
         self.time = f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
-        self.log_file = f"pattern_extraction_{self.time}.txt"
+        self.log_file = f"logs/pattern_extraction_{self.time}.txt"
 
     def find_basic_patterns(self) -> List[PatternDetails]:
         """Find patterns in the grids."""

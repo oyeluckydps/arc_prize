@@ -4,6 +4,7 @@ import pickle
 from pathlib import Path
 from typing import Any, Optional
 
+from globals import LOGGER
 from .connectors.dspy import DSPy
 from .connectors.dspy_LMs.claude_chat import ClaudeChat
 from .pattern_extraction.signatures.pattern_description_signature import DetailedPatternDescriptionSignature
@@ -23,6 +24,10 @@ dspy_pattern_extractor = DSPy(strategy_method='one_shot', system_info='', model=
 
 def log_interaction(log_file: str, prompt: str, response: str):
     """Log the interaction between the system and the LLM."""
+    if not LOGGER:
+        return
+    if not log_file.parent.exists():
+        log_file.parent.mkdir(parents=True)
     with open(log_file, 'a') as f:
         f.write(f"Prompt: {prompt}\n\n")
         f.write(f"Response: {response}\n\n")
