@@ -6,7 +6,7 @@ from .signatures.pattern_extraction_signature import PatternExtractionSignature
 from .validation import validate_patterns
 from ..utils import log_interaction, dspy_pattern_extractor
 
-def extract_and_validate_patterns(grid: Matrix, pattern_description: PatternDetails, log_file: str) -> List[Matrix]:
+def extract_and_validate_patterns(grid: Matrix, pattern_description: PatternDetails, log_file: str = None) -> List[Matrix]:
     """
     Extract patterns from a grid and validate them.
 
@@ -25,7 +25,8 @@ def extract_and_validate_patterns(grid: Matrix, pattern_description: PatternDeta
         # print(dspy_pattern_extractor.model.history[-1]["prompt"])
         # print(dspy_pattern_extractor.model.history[-1]["response"].__dict__["content"][0].__dict__["text"])
         
-        log_interaction(log_file, prompt, response)
+        if log_file is not None:
+            log_interaction(log_file, prompt, response)
         extracted_patterns = list(response.output_pattern)
 
         print("=" * 80)
@@ -52,6 +53,7 @@ def extract_and_validate_patterns(grid: Matrix, pattern_description: PatternDeta
         Correct your course of action based on the failure reports and perform the following task:
         {PatternExtractionSignature.sample_prompt()}
         """
-        log_interaction(log_file, prompt, "Resubmitting to LLM")
+        if log_file is not None:
+            log_interaction(log_file, prompt, "Resubmitting to LLM")
 
     

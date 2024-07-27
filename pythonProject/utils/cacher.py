@@ -58,6 +58,7 @@ def cached_call(func: Callable[..., Any]) -> Callable[..., Callable[..., Any]]:
 # Your existing cache functions remain unchanged
 def load_cached_data(filename: Path) -> Optional[Any]:
     """Load cached data from a file."""
+    filename = Path(filename)
     try:
         with open(filename, "rb") as file:
             return pickle.load(file)
@@ -66,6 +67,7 @@ def load_cached_data(filename: Path) -> Optional[Any]:
 
 def save_cached_data(filename: Path, data: Any):
     """Save data to a cache file."""
+    filename = Path(filename)
     if not filename.parent.exists():
         filename.parent.mkdir(parents=True)
     with open(filename, "wb") as file:

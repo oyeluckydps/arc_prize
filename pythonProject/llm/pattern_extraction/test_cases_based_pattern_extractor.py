@@ -1,6 +1,6 @@
 import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 from llm.integrated.signatures.io_based_pattern_description import IOBasedPatternDescription, io_based_pattern_chat
 from llm.causation.signatures.probable_causation import ProbableCausation, probable_causation_chat
 from llm.challenge_details.challenge_description import ChallengeDescription, challenge_description_obj
@@ -11,6 +11,7 @@ from .models import PatternTree, PatternNode, SchemaOfDecomposition
 from .signatures.pattern_description_signature import PatternDetails
 from utils.logger import log_interaction
 from .pattern_extractor import extract_and_validate_patterns
+from ..integrated.signatures.input_patterns_based_output_pattern_description import input_based_output_pattern_chat, InputPatternsBasedOutputPatternDescription
 
 class TestCasesBasedPatternExtractor:
     """Class for extracting patterns based on test cases."""
@@ -23,17 +24,14 @@ class TestCasesBasedPatternExtractor:
             training_set (List[InputOutputPair]): List of input-output pairs for training.
         """
         self.training_set: List[InputOutputPair] = training_set
-        self.pattern_descriptions: List[PatternDetails] = None
-        # self.pattern_trees: List[PatternTree] = [PatternTree(Matrix(matrix=pair['input'])) for pair in training_set]
-        # self.schema = SchemaOfDecomposition()
+        self.input_pattern_descriptions: List[PatternDetails] = []
+        self.output_pattern_descriptions: List[PatternDetails] = []
         self.time = f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         self.log_file = f"logs/pattern_extraction_{self.time}.txt"
 
-    def find_patterns(self, page_number: int, matrix_type: str) -> PatternDetails:
-        """Find patterns based on the training set."""
-
-        assert matrix_type in ['input', 'output']
-
+    
+    def find_probable_causation(self, page_number: int) -> ProbableCausation:
+        """Find probable causation."""
         probable_causation = cached_call(probable_causation_chat.send_message)(f"integrated/probable_causation_{page_number}.pickle", ["causation_description"])
         causation_response = probable_causation(
             challenge_description = challenge_description_obj,
@@ -41,56 +39,93 @@ class TestCasesBasedPatternExtractor:
             input_ouptut_pairs = self.training_set
         )
         print(causation_response.causation_description)
-        
+        self.probable_causation = causation_response.causation_description
+        return causation_response.causation_description
+    
+
+    def find_input_patterns(self, page_number: int) -> PatternDetails:
+        """Find patterns based on the training set."""
+        matrix_type = 'input'
+
+        probable_causation = self.probable_causation
         io_based_pattern = cached_call(io_based_pattern_chat.send_message)(f"integrated/io_based_pattern_description_{page_number}.pickle", ["pattern_description"])
         pattern_description_response = io_based_pattern(
             challenge_description = challenge_description_obj,
             question = IOBasedPatternDescription.sample_prompt(),
             input_ouptut_pairs = self.training_set,
-            probable_causation = causation_response.causation_description,
+            probable_causation = probable_causation.causation_description,
             FOR_MATRIX_TYPE = matrix_type
         )
         print(pattern_description_response.pattern_description)
         
-        self.pattern_descriptions = [pattern_description_response.pattern_description]
+        self.input_pattern_description = pattern_description_response.pattern_description
+        return pattern_description_response.pattern_description
+    
 
-    def decompose_grids(self, matrix_type: str):
+    def find_output_patterns(self, page_number: int) -> List[PatternDetails]:
+        """Find patterns based on the training set."""
+        matrix_type = 'output'
+
+        all_patterns_for_an_input_matrix = [[pattern for _, _, extracted in patterns_for_io_pair.values() for pattern in extracted] \
+                                    for patterns_for_io_pair in self.input_extracted_patterns.values()]
+
+        all_pattern_descriptions = []
+        for i, input_extracted_patterns in enumerate(self.input_extracted_patterns):
+            input_based_ouptut_pattern = cached_call(input_based_output_pattern_chat.send_message)\
+                                    (f"integrated/input_based_output_pattern_description_{page_number}_{i}.pickle", ["pattern_description"])
+            pattern_description = input_based_ouptut_pattern(
+                challenge_description = challenge_description_obj,
+                question = InputPatternsBasedOutputPatternDescription.sample_prompt(),
+                input_ouptut_pairs = self.training_set,
+                probable_causation = self.probable_causation,
+                input_matrix = self.training_set[i].input,
+                extracted_input_patterns = all_patterns_for_an_input_matrix[i],
+                output_matrix = self.training_set[i].output
+            )
+            all_pattern_descriptions.append(pattern_description.pattern_description)
+        
+        self.output_pattern_descriptions = all_pattern_descriptions
+
+
+
+    def decompose_input_grids(self):
         """Decompose grids into patterns."""
         
-        assert matrix_type in ['input', 'output']
+        matrix_type = 'input'
+
+        extracted_input_patterns = []  # New dictionary to store the results
 
         for i, input_output_pair in enumerate(self.training_set):
             grid = input_output_pair.input if matrix_type == 'input' else input_output_pair.output
-            extracted_patterns = []
-            pattern_descriptions_for_this_grid = []
             
-            for j, pattern in enumerate(self.pattern_descriptions):
-                print("=" * 80)
-                print(f"Extracting patterns in accordance to the pattern description from grid {i+1}.")
-                print(f"Pattern description: {pattern}")
-                print(f"Grid: ")
-                print(grid)
-                print("=" * 80)
-                extracted = extract_and_validate_patterns(grid, pattern, self.log_file)
-                extracted_patterns.extend(extracted)
-                pattern_descriptions_for_this_grid.append(pattern)
             
-        #     self._build_pattern_tree(self.pattern_trees[i], extracted_patterns, pattern_descriptions_for_this_grid)
+            print("=" * 80)
+            print(f"Extracting patterns in accordance to the pattern description from grid {i+1}.")
+            print(f"Pattern description: {self.input_pattern_descriptions}")
+            print(f"Grid: ")
+            print(grid)
+            print("=" * 80)
+            extracted = extract_and_validate_patterns(grid, self.input_pattern_descriptions, self.log_file)
+            # Store the results in the nested dictionary
+            extracted_input_patterns.append(extracted)
+
+        self.input_extracted_patterns = extracted_input_patterns
+        return extracted_input_patterns
+
+
+    def decompose_output_grids(self):
+        """Decompose grids into patterns."""
         
-        # self._build_schema_of_decomposition(pattern_descriptions_for_this_grid)
+        matrix_type = 'ouput'
+        all_extracted_output_patterns = []
+        for i, output_pattern_description in enumerate(self.output_pattern_descriptions):
+                print("=" * 80)
+                print(f"Extracting output patterns in accordance to the pattern description from grid {i+1}.")
+                print(f"Pattern description: {output_pattern_description.pattern_description}")
+                print(f"Grid: ")
+                print(self.training_set[i].output)
+                print("=" * 80)
 
-    def _build_pattern_tree(self, tree: PatternTree, extracted_patterns: List[Matrix], pattern_descriptions: List[PatternDetails]):
-        """Build a pattern tree for a single grid."""
-        for pattern, description in zip(extracted_patterns, pattern_descriptions):
-            child = PatternNode(pattern, description)
-            if tree.root.children is None:
-                tree.root.children = []
-            tree.root.children.append(child)
-
-    def _build_schema_of_decomposition(self, patterns: List[PatternDetails]):
-        """Build the schema of decomposition."""
-        for pattern in patterns:
-            child = PatternNode(Matrix(matrix=[]), pattern)
-            if self.schema.root.children is None:
-                self.schema.root.children = []
-            self.schema.root.children.append(child)
+                extracted_patterns = extract_and_validate_patterns(self.training_set[i].output, output_pattern_description.pattern_description)
+                all_extracted_output_patterns.append(extracted_patterns)
+        self.output_extracted_patterns = all_extracted_output_patterns
