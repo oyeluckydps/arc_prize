@@ -12,6 +12,8 @@ from .signatures.pattern_description_signature import PatternDetails
 from utils.logger import log_interaction
 from .pattern_extractor import extract_and_validate_patterns
 from ..integrated.signatures.input_patterns_based_output_pattern_description import input_based_output_pattern_chat, InputPatternsBasedOutputPatternDescription
+from ..integrated.signatures.annotate_input_patterns import annotate_patterns_chat, AnnotatePatterns
+
 
 class TrainingCasesBasedPatternExtractor:
     """Class for extracting patterns based on test cases."""
@@ -60,6 +62,31 @@ class TrainingCasesBasedPatternExtractor:
         
         self.input_pattern_description = pattern_description_response.pattern_description
         return pattern_description_response.pattern_description
+
+
+    def decompose_input_grids(self):
+        """Decompose grids into patterns."""
+        
+        matrix_type = 'input'
+
+        extracted_input_patterns = []  # New dictionary to store the results
+
+        for i, input_output_pair in enumerate(self.training_set):
+            grid = input_output_pair.input if matrix_type == 'input' else input_output_pair.output
+            
+            
+            print("=" * 80)
+            print(f"Extracting patterns in accordance to the pattern description from grid {i+1}.")
+            print(f"Pattern description: {self.input_pattern_description}")
+            print(f"Grid: ")
+            print(grid)
+            print("=" * 80)
+            extracted = extract_and_validate_patterns(grid, self.input_pattern_description, self.log_file)
+            # Store the results in the nested dictionary
+            extracted_input_patterns.append(extracted)
+
+        self.input_extracted_patterns = extracted_input_patterns
+        return extracted_input_patterns
     
 
     def find_output_patterns(self, page_number: int) -> List[PatternDetails]:
@@ -86,32 +113,6 @@ class TrainingCasesBasedPatternExtractor:
         self.output_pattern_descriptions = all_pattern_descriptions
 
 
-
-    def decompose_input_grids(self):
-        """Decompose grids into patterns."""
-        
-        matrix_type = 'input'
-
-        extracted_input_patterns = []  # New dictionary to store the results
-
-        for i, input_output_pair in enumerate(self.training_set):
-            grid = input_output_pair.input if matrix_type == 'input' else input_output_pair.output
-            
-            
-            print("=" * 80)
-            print(f"Extracting patterns in accordance to the pattern description from grid {i+1}.")
-            print(f"Pattern description: {self.input_pattern_description}")
-            print(f"Grid: ")
-            print(grid)
-            print("=" * 80)
-            extracted = extract_and_validate_patterns(grid, self.input_pattern_description, self.log_file)
-            # Store the results in the nested dictionary
-            extracted_input_patterns.append(extracted)
-
-        self.input_extracted_patterns = extracted_input_patterns
-        return extracted_input_patterns
-
-
     def decompose_output_grids(self):
         """Decompose grids into patterns."""
         
@@ -128,3 +129,47 @@ class TrainingCasesBasedPatternExtractor:
                 extracted_patterns = extract_and_validate_patterns(self.training_set[i].output, output_pattern_description)
                 all_extracted_output_patterns.append(extracted_patterns)
         self.output_extracted_patterns = all_extracted_output_patterns
+
+
+    def annotate_patterns(self, page_number: int):
+        """Annotate input and output patterns and find detailed causation."""
+        annotate_patterns = cached_call(annotate_patterns_chat.send_message)
+        
+        self.detailed_causation = []
+        self.annotated_input_patterns = []
+        self.annotated_output_patterns = []
+
+        for i, (input_patterns, output_patterns) in enumerate(zip(self.input_extracted_patterns, self.output_extracted_patterns)):
+            annotation_response = annotate_patterns(
+            f"integrated/annotate_patterns_io_{i}_page_{page_number}.pickle", 
+            ["detailed_causation", "annotated_input_patterns", "annotated_output_patterns"]
+            )\
+            (
+                challenge_description=challenge_description_obj,
+                question=AnnotatePatterns.sample_prompt(),
+                input_ouptut_pairs=self.training_set,
+                probable_causation=self.probable_causation,
+                input_matrix=self.training_set[i].input,
+                extracted_input_patterns=input_patterns,
+                output_matrix=self.training_set[i].output,
+                extracted_output_patterns=output_patterns
+            )
+            
+            # Store the results
+            self.detailed_causation.append(annotation_response.detailed_causation)
+            self.annotated_input_patterns.append(annotation_response.annotated_input_patterns)
+            self.annotated_output_patterns.append(annotation_response.annotated_output_patterns)
+            
+            print("=" * 80)
+            print(f"Detailed causation for grid pair {i+1}:")
+            print(self.detailed_causation[-1])
+            print("\nAnnotated input patterns:")
+            for pattern in self.annotated_input_patterns[-1]:
+                print(f"Matrix: {pattern.matrix}")
+                print(f"Annotations: {pattern.annotations}")
+            print("\nAnnotated output patterns:")
+            for pattern in self.annotated_output_patterns[-1]:
+                print(f"Matrix: {pattern.matrix}")
+                print(f"Annotations: {pattern.annotations}")
+            print("=" * 80)
+
