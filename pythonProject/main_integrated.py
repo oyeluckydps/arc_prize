@@ -18,53 +18,24 @@ def main():
     training_set = [InputOutputPair(input=Matrix(matrix=elem['input']), output=Matrix(matrix=elem['output'])) for elem in grids['train']]
     
     if IS_DEBUG:
-        extractor = load_cached_data(f"cache/integrated/extractor_{page_number}.pickle")
+        extractor = load_cached_data(f"cache/integrated/input_extractor_{page_number}.pickle")
         if extractor is None:
 
             extractor = TestCasesBasedPatternExtractor(training_set)
-            extractor.find_patterns(page_number, "input")
-            extractor.decompose_grids("input")
-            save_cached_data(f"cache/integrated/extractor_{page_number}.pickle", extractor)
-        probable_causation = extractor.probable_causation
-        all_input_extracted_patterns = extractor.extracted_patterns
+            extractor.find_probable_causation(page_number)
+            extractor.find_input_patterns(page_number)
+            extractor.decompose_input_grids()
+            save_cached_data(f"cache/integrated/input_extractor_{page_number}.pickle", extractor)
+    if IS_DEBUG:
+        new_extractor = load_cached_data(f"cache/integrated/output_extractor_{page_number}.pickle")
+        if new_extractor is None:
+            extractor.find_output_patterns(page_number)
+            extractor.decompose_output_grids()
+            save_cached_data(f"cache/integrated/output_extractor_{page_number}.pickle", extractor)
+        else:
+            extractor = new_extractor
+    pass
 
-    all_patterns_for_an_input_matrix = [[pattern for _, _, extracted in patterns_for_io_pair.values() for pattern in extracted] \
-                                        for patterns_for_io_pair in all_input_extracted_patterns.values()]
-    
-    
-    all_pattern_descriptions = []
-    all_extracted_output_patterns = []
-    for i, input_extracted_patterns in enumerate(all_input_extracted_patterns):
-        input_based_ouptut_pattern = cached_call(input_based_output_pattern_chat.send_message)\
-                                (f"integrated/input_based_output_pattern_description_{page_number}_{i}.pickle", ["pattern_description"])
-        pattern_description = input_based_ouptut_pattern(
-            challenge_description = challenge_description_obj,
-            question = InputPatternsBasedOutputPatternDescription.sample_prompt(),
-            input_ouptut_pairs = training_set,
-            probable_causation = probable_causation,
-            input_matrix = training_set[i].input,
-            extracted_input_patterns = all_patterns_for_an_input_matrix[i],
-            output_matrix = training_set[i].output
-        )
-        all_pattern_descriptions.append(pattern_description.pattern_description)
-        
-        print("=" * 80)
-        print(f"Extracting output patterns in accordance to the pattern description from grid {i+1}.")
-        print(f"Pattern description: {pattern_description.pattern_description}")
-        print(f"Grid: ")
-        print(training_set[i].output)
-        print("=" * 80)
-
-        extracted_patterns = extract_and_validate_patterns(training_set[i].output, pattern_description.pattern_description)
-        all_extracted_output_patterns.append(extracted_patterns)
-    
-
-
-    
-    
-
-
-    
 
 if __name__ == "__main__":
     main()

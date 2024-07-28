@@ -24,7 +24,7 @@ class TestCasesBasedPatternExtractor:
             training_set (List[InputOutputPair]): List of input-output pairs for training.
         """
         self.training_set: List[InputOutputPair] = training_set
-        self.input_pattern_descriptions: List[PatternDetails] = []
+        self.input_pattern_description: PatternDetails = None
         self.output_pattern_descriptions: List[PatternDetails] = []
         self.time = f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         self.log_file = f"logs/pattern_extraction_{self.time}.txt"
@@ -53,7 +53,7 @@ class TestCasesBasedPatternExtractor:
             challenge_description = challenge_description_obj,
             question = IOBasedPatternDescription.sample_prompt(),
             input_ouptut_pairs = self.training_set,
-            probable_causation = probable_causation.causation_description,
+            probable_causation = self.probable_causation,
             FOR_MATRIX_TYPE = matrix_type
         )
         print(pattern_description_response.pattern_description)
@@ -66,8 +66,7 @@ class TestCasesBasedPatternExtractor:
         """Find patterns based on the training set."""
         matrix_type = 'output'
 
-        all_patterns_for_an_input_matrix = [[pattern for _, _, extracted in patterns_for_io_pair.values() for pattern in extracted] \
-                                    for patterns_for_io_pair in self.input_extracted_patterns.values()]
+        all_patterns_for_an_input_matrix = self.input_extracted_patterns
 
         all_pattern_descriptions = []
         for i, input_extracted_patterns in enumerate(self.input_extracted_patterns):
@@ -101,11 +100,11 @@ class TestCasesBasedPatternExtractor:
             
             print("=" * 80)
             print(f"Extracting patterns in accordance to the pattern description from grid {i+1}.")
-            print(f"Pattern description: {self.input_pattern_descriptions}")
+            print(f"Pattern description: {self.input_pattern_description}")
             print(f"Grid: ")
             print(grid)
             print("=" * 80)
-            extracted = extract_and_validate_patterns(grid, self.input_pattern_descriptions, self.log_file)
+            extracted = extract_and_validate_patterns(grid, self.input_pattern_description, self.log_file)
             # Store the results in the nested dictionary
             extracted_input_patterns.append(extracted)
 
@@ -121,11 +120,11 @@ class TestCasesBasedPatternExtractor:
         for i, output_pattern_description in enumerate(self.output_pattern_descriptions):
                 print("=" * 80)
                 print(f"Extracting output patterns in accordance to the pattern description from grid {i+1}.")
-                print(f"Pattern description: {output_pattern_description.pattern_description}")
+                print(f"Pattern description: {output_pattern_description}")
                 print(f"Grid: ")
                 print(self.training_set[i].output)
                 print("=" * 80)
 
-                extracted_patterns = extract_and_validate_patterns(self.training_set[i].output, output_pattern_description.pattern_description)
+                extracted_patterns = extract_and_validate_patterns(self.training_set[i].output, output_pattern_description)
                 all_extracted_output_patterns.append(extracted_patterns)
         self.output_extracted_patterns = all_extracted_output_patterns
