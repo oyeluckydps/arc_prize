@@ -14,4 +14,9 @@ class Matrix(BaseModel):
     def __str__(self) -> str:
         return pp.pformat(self.matrix)
     
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Matrix):
+            return False
+        return self.matrix == other.matrix
+    
     

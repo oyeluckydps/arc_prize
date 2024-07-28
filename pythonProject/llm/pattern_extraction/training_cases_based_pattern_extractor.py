@@ -13,7 +13,7 @@ from utils.logger import log_interaction
 from .pattern_extractor import extract_and_validate_patterns
 from ..integrated.signatures.input_patterns_based_output_pattern_description import input_based_output_pattern_chat, InputPatternsBasedOutputPatternDescription
 
-class TestCasesBasedPatternExtractor:
+class TrainingCasesBasedPatternExtractor:
     """Class for extracting patterns based on test cases."""
 
     def __init__(self, training_set: List[InputOutputPair]):

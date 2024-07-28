@@ -53,9 +53,11 @@ This can happend due to the following sources of error:
 1. The extracted shape is found in the original grid but the digit is different. 
         For example during the extraction some digits of the pattern were changed leading to errors.
         You can rectify this type of error by changing the digit of the pattern to the digit found in the original grid.
-2. The extracted shape is located in the original grid but the position is different. 
+2. The extracted shape is located in the original grid but the position is different.
         For example during the extraction the shape was shifted to a different position.
         You can rectify this type of error by shifting the pattern to the position found in the original grid.
+        IMPORTANT: It is observed that the patterns starting from the second row are shifted to the first row often. Kindly check if this is the case.
+        If the patterns occuring in second row was mentioned as present in first row then make sure to start it from the second row in your extraction.
 3. The extracted pattern has a different shape than in the original grid.
         For example during the extraction some dimension or aspect of the shape was changed leading to errors.
         e.g. A rectangle of 2*3 cells was extracted but the original grid has a square of 3*3 cells.
