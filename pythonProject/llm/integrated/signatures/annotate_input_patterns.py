@@ -63,13 +63,28 @@ class AnnotatePatterns(dspy.Signature):
             - patterns extracted from the output matrix
         
         Given these input and output matrices and their corresponding patterns, you need to do the follwing three tasks:
-            - Find Detailed Causation: Given the patterns found in the input matrix and the patterns found in the output matrix, 
-                identify the most relevant and most prominent causation/transformation rule that transforms each or group of the input pattern 
-                into one or more patterns in the output matrix.
+            - Find Detailed Causation: Given the patterns found in the input matrix, 
+                identify the most relevant and most prominent causation/transformation rule that transforms each pattern or a group of the input patterns 
+                into one or more patterns in the output matrix. Write the causation as a set of instructions/algorithms for an LLM to follow.
+                The LLM should be able to transform the input patterns into the corresponding output patterns using the detailed causation that you provide here.
+                Use the tags that you will annotate to refer to the input patterns and the output patterns. 
+                Remember that the LLM will have access to the input grid, extracted input patterns with its annotation, and the detailed causation that you provide here.
+                The LLM should be able to use only these information and recreate the otuput patterns. 
+                Remember that the LLM will not have access to the output grid and pattern during the transformation process.
             - Annonate input patterns: With respect to the causation/transformation rule for each pattern or group of patterns, 
-                annonate each pattern in the input matrix.
-            - Annonate output patterns: With respect to the causation/transformation rule for each pattern or group of patterns,
-                annonate each pattern in the output matrix.
+                provide the most relevant name to a pattern or the same name to the group of patterns. So that they can be referred easily. 
+                If you need to refer to the patterns in an order then you may use an index followed by a hyphen. 
+                Mention the naming convention in the detailed causation field so that the LLM can refer to the input patterns with ambiguity.
+                In the causation field, specify how this particular pattern or group of patterns with the same tag 
+                are tranformed into the output pattern/patterns. Mention the causation as a set of instructions/algorithms for an LLM to follow.
+                The LLM should be able to transform the input patterns into the corresponding output patterns using the detailed causation that you provide here.
+                Use the tags that you will annotate to refer to the input patterns and the output patterns. 
+                Remember that the LLM will have access to the input grid, extracted input patterns with its annotation, and the detailed causation that you provide here.
+                The LLM should be able to use only these information and recreate the otuput patterns. 
+                Remember that the LLM will not have access to the output grid and pattern during the transformation process.
+            - Annonate output patterns: With respect to the causation/transformation rule for each pattern or group of patterns. 
+                Provide a relevant name to each pattern or group of patterns. So that they can be referred easily. In the causation field,
+                specify how this particular pattern or group of patterns is constructed from the input pattern/patterns.
         
         Strategy:
             1. Think about all the patterns found in the input matrix and try to find how they combine or tranform to form the patterns found in the output matrix.
@@ -77,7 +92,9 @@ class AnnotatePatterns(dspy.Signature):
             2. Once you have identified the causation/transformation rule, for each input pattern, try to find the most relevant tag that represents the
                 most important characteristic of the pattern given the identified causation, characteristic (such as color, size, shape, etc.) of the pattern itself.
             3. For each of this input patterns, along with tag write the causation rule/algorithm that must be followed to transform this pattern 
-                into the corresponding output pattern/patterns. Mention the tage of output patterns that this input pattern is going to affect or transform into.
+                into the corresponding. Refer to output patterns by their tag only as the LLM will not have access to the output matrices while applying these
+                causation rules to recreate the output patterns. Do not refer to the properties/characteristics of the output matrices.
+                Mention the tags of output patterns that this input pattern is going to affect or transform into.
             4. Do the same for the output matrix and annotate the output patterns. Find the most relevant tag for each output pattern that represents the
                 most important characteristic of the pattern given the identified causation, characteristic (such as color, size, shape, etc.) of the pattern itself.
             5. For each of this output patterns, along with tag write how the causation rule/algorithm worked on input pattern/patterns 
