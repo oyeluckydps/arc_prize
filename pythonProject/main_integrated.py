@@ -9,7 +9,8 @@ from llm.pattern_extraction.training_cases_based_pattern_extractor import Traini
 from llm.challenge_details.challenge_description import ChallengeDescription, challenge_description_obj
 from llm.integrated.signatures.input_patterns_based_output_pattern_description import input_based_output_pattern_chat, InputPatternsBasedOutputPatternDescription
 from llm.pattern_extraction.pattern_extractor import extract_and_validate_patterns
-from llm.pattern_reconstruction.output_patterns_reconstruction import OutputPatternsReconstruction  # Add this import
+from llm.pattern_reconstruction.output_patterns_reconstruction import OutputPatternsReconstruction 
+from llm.verification.output_verification import OutputVerification
 
 def main():
     page_number = 13
@@ -18,6 +19,7 @@ def main():
     # Form a list of input-output pairs
     training_set = [InputOutputPair(input=Matrix(matrix=elem['input']), output=Matrix(matrix=elem['output'])) for elem in grids['train']]
     
+    # Find the most probable causation and the input patterns for each training case.
     if IS_DEBUG:
         extractor = load_cached_data(f"cache/integrated/input_extractor_{page_number}.pickle")
         if extractor is None:
@@ -27,6 +29,7 @@ def main():
             extractor.decompose_input_grids()
             save_cached_data(f"cache/integrated/input_extractor_{page_number}.pickle", extractor)
 
+    # Find the output patterns for each training case.
     if IS_DEBUG:
         new_extractor = load_cached_data(f"cache/integrated/output_extractor_{page_number}.pickle")
         if new_extractor is None:
@@ -36,6 +39,7 @@ def main():
         else:
             extractor = new_extractor
 
+    # Annotate the input and output patterns for each training case.
     if IS_DEBUG:
         new_extractor = load_cached_data(f"cache/integrated/annotated_extractor_{page_number}.pickle")
         if new_extractor is None:
@@ -44,7 +48,7 @@ def main():
         else:
             extractor = new_extractor
 
-    # New code to construct OutputPatternsReconstruction object and call reconstruct_all_output_patterns
+    # Reconstruct the output based on the input annotation and the detailed causation.
     if IS_DEBUG:
         reconstructor = load_cached_data(f"cache/integrated/output_reconstructor_{page_number}.pickle")
         if reconstructor is None:
@@ -64,7 +68,20 @@ def main():
         print(f"Number of reconstructed output patterns: {len(reconstructed_patterns)}")
         print(f"Number of reconstructed output matrices: {len(reconstructed_matrices)}")
 
-        # You can add more code here to analyze or use the reconstructed patterns and matrices
+    # Verify the reconstructed output patterns and matrices.
+    verifier = OutputVerification(
+        training_set=training_set,
+        annotated_input_patterns=extractor.annotated_input_patterns,
+        annotated_output_patterns=extractor.annotated_output_patterns,
+        reconstructed_output_patterns=reconstructor.reconstructed_output_patterns,
+        reconstructed_output_matrices=reconstructor.reconstructed_output_matrices
+    )
+
+    print("\nStarting verification process...")
+    verifier.verify_and_report_differences()
+    print("Verification process completed.")
+
 
 if __name__ == "__main__":
     main()
+

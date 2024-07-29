@@ -5,6 +5,7 @@ from custom_types.input_output_pair import InputOutputPair
 from ..integrated.signatures.annotate_input_patterns import AnnotatedPattern
 from ..challenge_details.challenge_description import ChallengeDescription, challenge_description_obj
 from .signatures.reconstruct_output_patterns import ReconstructOutputPatterns, reconstruct_output_patterns_chat
+from utils.cacher import cached_call
 
 class OutputPatternsReconstruction:
     """Class for reconstructing output patterns based on input patterns and causation rules."""
@@ -44,7 +45,7 @@ class OutputPatternsReconstruction:
         Returns:
             List[AnnotatedPattern]: Reconstructed and annotated output patterns.
         """
-        reconstruction_response = reconstruct_output_patterns_chat.send_message(
+        reconstruction_response = cached_call(reconstruct_output_patterns_chat.send_message)(
             f"integrated/reconstruct_output_patterns_{self.page_number}.pickle",
             ["reconstructed_output_patterns", "reconstructed_output_matrix"]
         )(
@@ -86,4 +87,3 @@ class OutputPatternsReconstruction:
 
         print("All output patterns have been reconstructed.")
 
-    
