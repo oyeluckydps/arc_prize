@@ -39,7 +39,7 @@ class AnnotatePatterns(dspy.Signature):
     input_matrix :Matrix = dspy.InputField()
     extracted_input_patterns: List[Matrix] = dspy.InputField()
     output_matrix :Matrix = dspy.InputField()
-    extracted_input_patterns: List[Matrix] = dspy.InputField()
+    extracted_output_patterns: List[Matrix] = dspy.InputField()
 
     detailed_causation: str = dspy.OutputField()
     annotated_input_patterns: List[AnnotatedPattern] = dspy.OutputField()

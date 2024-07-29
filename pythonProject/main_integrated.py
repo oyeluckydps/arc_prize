@@ -34,6 +34,13 @@ def main():
             save_cached_data(f"cache/integrated/output_extractor_{page_number}.pickle", extractor)
         else:
             extractor = new_extractor
+    if IS_DEBUG:
+        new_extractor = load_cached_data(f"cache/integrated/annotated_extractor_{page_number}.pickle")
+        if new_extractor is None:
+            extractor.annotate_patterns(page_number)
+            save_cached_data(f"cache/integrated/annotated_extractor_{page_number}.pickle", extractor)
+        else:
+            extractor = new_extractor
     pass
 
 
