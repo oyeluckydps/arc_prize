@@ -1,6 +1,9 @@
 import datetime
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Union, Callable
+import ast
+import re
+
 from llm.integrated.signatures.io_based_pattern_description import IOBasedPatternDescription, io_based_pattern_chat
 from llm.causation.signatures.probable_causation import ProbableCausation, probable_causation_chat
 from llm.challenge_details.challenge_description import ChallengeDescription, challenge_description_obj
@@ -13,6 +16,7 @@ from utils.logger import log_interaction
 from .pattern_extractor import extract_and_validate_patterns
 from ..integrated.signatures.input_patterns_based_output_pattern_description import input_based_output_pattern_chat, InputPatternsBasedOutputPatternDescription
 from ..integrated.signatures.annotate_input_patterns import annotate_patterns_chat, AnnotatePatterns
+from .signatures.pattern_description_python_code import PatternDescriptionPythonCode, pattern_description_python_code
 
 
 class TrainingCasesBasedPatternExtractor:
@@ -62,6 +66,107 @@ class TrainingCasesBasedPatternExtractor:
         
         self.input_pattern_description = pattern_description_response.pattern_description
         return pattern_description_response.pattern_description
+
+
+    def _find_python_code(self, matrices: List[Matrix], pattern_description: PatternDetails) -> str:
+        """
+        Helper method to find python code corresponding to the pattern description and validate it.
+        """
+        
+        code_response = pattern_description_python_code.send_message(
+            question=PatternDescriptionPythonCode.sample_prompt(),
+            matrices=matrices,
+            pattern_description=pattern_description
+        )
+        python_code = code_response.python_code
+        
+        pattern = r"```python\n(.*?)```"
+        match = re.search(pattern, python_code, re.DOTALL)
+        if match:
+            python_code = match.group(1).strip()
+        
+        validation_result = self._validate_python_code(python_code, matrices)
+        if validation_result:
+            print("Python code validation successful.")
+            return python_code
+        else:
+            print(f"Python code validation failed: {validation_result}")
+            raise ValueError(f"Invalid validation result: {validation_result}")
+
+
+    def _get_python_function(self, python_code: str) -> Callable:
+        """
+        Get the Python function from the generated Python code.
+        """
+        tree = ast.parse(python_code)
+        function_name = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)][0].name
+        exec(python_code, globals())
+        func = globals()[function_name]
+        return func
+
+
+    def _validate_python_code(self, python_code: str, matrices: List[Matrix]) -> Union[bool, str]:
+        """
+        Validate the generated Python code by executing it with sample matrices.
+        Returns True if validation passes, or an error message as a string if it fails.
+        """
+        try:
+            func = self._get_python_function(python_code)
+
+            # Test the function with each matrix
+            for matrix in matrices:
+                func(matrix.matrix)
+
+            return True
+        except Exception as e:
+            return str(e)
+        
+
+    def find_python_code(self, page_number: int, grid_type: str) -> List[PatternDetails]:
+        """Find python code corresponding to the input or output pattern description."""
+        pattern_description_python_code = cached_call(self._find_python_code)
+        if grid_type == 'input':
+            python_code = pattern_description_python_code\
+                (f"integrated/pattern_description_python_code_{page_number}_{grid_type}.pickle")\
+                ([io_pair.input for io_pair in self.training_set], self.input_pattern_description)
+            self.input_extraction_python_code = python_code
+            return self.input_extraction_python_code
+        elif grid_type == 'output':
+            self.output_extraction_python_codes = []
+            for i, (input_output_pair, output_pattern_description) in enumerate(zip(self.training_set, self.output_pattern_descriptions)):
+                python_code = pattern_description_python_code\
+                    (f"integrated/pattern_description_python_code_{page_number}_{grid_type}_{i}.pickle")\
+                    ([input_output_pair.output], output_pattern_description)
+                self.output_extraction_python_codes.append(python_code)
+                return self.output_extraction_python_codes
+        else:
+            raise ValueError(f"Invalid grid type: {grid_type}")
+
+
+    def patterns_extractor(self, grid_type: str):
+        """
+        Extract patterns from input or output matrices using the corresponding Python functions.
+        
+        Args:
+        grid_type (str): Either 'input' or 'output'.
+        """
+        if grid_type not in ['input', 'output']:
+            raise ValueError(f"Invalid grid type: {grid_type}")
+        
+        if grid_type == 'input':
+            self.input_extracted_patterns_programatically = []
+            for io_pair in self.training_set:
+                func = self._get_python_function(self.input_extraction_python_code)
+                patterns = func(io_pair.input.matrix)
+                self.input_extracted_patterns_programatically.append([Matrix(matrix=pattern) for pattern in patterns])
+        else:  # output
+            self.output_extracted_patterns_programatically = []
+            for i, io_pair in enumerate(self.training_set):
+                func = self._get_python_function(self.output_extraction_python_codes[i])
+                patterns = func(io_pair.output.matrix)
+                self.output_extracted_patterns_programatically.append([Matrix(matrix=pattern) for pattern in patterns])
+        
+        print(f"Extracted {grid_type} patterns programmatically.")
 
 
     def decompose_input_grids(self):

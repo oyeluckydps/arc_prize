@@ -53,7 +53,8 @@ def extract_and_validate_patterns(grid: Matrix, pattern_description: PatternDeta
     last_round_extracted_patterns = []
 
     while True:
-        response = dspy_pattern_extractor.send_message(query=prompt, matrix=grid, pattern_description=pattern_description)
+        response = dspy_pattern_extractor.send_message(query=prompt, matrix=grid, pattern_description=pattern_description, 
+                                                        num_of_rows=len(grid.matrix), num_of_cols=len(grid.matrix[0]))
         
         # print(dspy_pattern_extractor.model.history[-1]["prompt"])
         # print(dspy_pattern_extractor.model.history[-1]["response"].__dict__["content"][0].__dict__["text"])

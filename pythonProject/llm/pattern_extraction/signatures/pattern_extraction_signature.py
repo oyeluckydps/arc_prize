@@ -23,6 +23,8 @@ class PatternExtractionSignature(dspy.Signature):
     query: str = dspy.InputField()
     pattern_description: PatternDetails = dspy.InputField()
     matrix: Matrix = dspy.InputField()
+    num_of_rows: int = dspy.InputField()
+    num_of_cols: int = dspy.InputField()
     output_pattern: CollectionOfMatrices = dspy.OutputField()
     
     @staticmethod

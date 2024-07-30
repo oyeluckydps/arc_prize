@@ -27,7 +27,8 @@ class OutputVerification:
         self.reconstructed_output_patterns = reconstructed_output_patterns
         self.reconstructed_output_matrices = reconstructed_output_matrices
 
-    def check_matrix_equality(self, original: Matrix, reconstructed: Matrix) -> Tuple[bool, List[Tuple[int, int, str, str]]]:
+    
+    def check_matrix_equality(self, original: Matrix, reconstructed: Matrix) -> Tuple[bool, Matrix]:
         """
         Check if the output matrix and reconstructed output matrix are equal.
 
@@ -36,17 +37,25 @@ class OutputVerification:
             reconstructed (Matrix): Reconstructed output matrix.
 
         Returns:
-            Tuple[bool, List[Tuple[int, int, str, str]]]: 
+            Tuple[bool, Matrix]: 
                 - Boolean indicating if matrices are equal
-                - List of differences (row, col, original value, reconstructed value)
+                - Matrix where equal elements are None and different elements are from the reconstructed matrix
         """
-        differences = []
+        difference_matrix = []
+        has_differences = False
+
         for i in range(len(original.matrix)):
+            row = []
             for j in range(len(original.matrix[0])):
-                if original.matrix[i][j] != reconstructed.matrix[i][j]:
-                    differences.append((i, j, original.matrix[i][j], reconstructed.matrix[i][j]))
-        
-        return len(differences) == 0, differences
+                if original.matrix[i][j] == reconstructed.matrix[i][j]:
+                    row.append(None)
+                else:
+                    row.append(reconstructed.matrix[i][j])
+                    has_differences = True
+            difference_matrix.append(row)
+
+        return not has_differences, Matrix(matrix=difference_matrix)
+
 
     def check_pattern_equality(self, original: List[AnnotatedPattern], reconstructed: List[AnnotatedPattern]) -> Tuple[bool, List[str]]:
         """
@@ -90,8 +99,7 @@ class OutputVerification:
             
             if not matrices_equal:
                 print("Matrix differences:")
-                for row, col, orig_val, recon_val in matrix_differences:
-                    print(f"  Position [{row}][{col}]: Original = {orig_val}, Reconstructed = {recon_val}")
+                print(matrix_differences)
             
             # Check pattern equality
             patterns_equal, pattern_differences = self.check_pattern_equality(orig_patterns, recon_patterns)

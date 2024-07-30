@@ -13,7 +13,7 @@ from llm.pattern_reconstruction.output_patterns_reconstruction import OutputPatt
 from llm.verification.output_verification import OutputVerification
 
 def main():
-    page_number = 13
+    page_number = 3
     grids = load_json_by_page(folder=Path('processed_json/evaluation_challenges/'), page_number=page_number)
     
     # Form a list of input-output pairs
@@ -29,6 +29,14 @@ def main():
             extractor.decompose_input_grids()
             save_cached_data(f"cache/integrated/input_extractor_{page_number}.pickle", extractor)
 
+    # Find the input pattern extractor code and patterns programatically for each input case.
+    if IS_DEBUG:
+        new_extractor = load_cached_data(f"cache/integrated/input_extractor_programatically_{page_number}.pickle")
+        if new_extractor is None:
+            extractor.find_python_code(page_number, 'input')
+            extractor.patterns_extractor('input')
+            save_cached_data(f"cache/integrated/input_extractor_programatically_{page_number}.pickle", extractor)
+
     # Find the output patterns for each training case.
     if IS_DEBUG:
         new_extractor = load_cached_data(f"cache/integrated/output_extractor_{page_number}.pickle")
@@ -38,6 +46,14 @@ def main():
             save_cached_data(f"cache/integrated/output_extractor_{page_number}.pickle", extractor)
         else:
             extractor = new_extractor
+
+    # Find the input pattern extractor code and patterns programatically for each input case.
+    if IS_DEBUG:
+        new_extractor = load_cached_data(f"cache/integrated/input_extractor_programatically_{page_number}.pickle")
+        if new_extractor is None:
+            extractor.find_python_code(page_number, 'input')
+            extractor.patterns_extractor('input')
+            save_cached_data(f"cache/integrated/input_extractor_programatically_{page_number}.pickle", extractor)
 
     # Annotate the input and output patterns for each training case.
     if IS_DEBUG:

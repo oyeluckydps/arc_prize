@@ -31,9 +31,9 @@ class OutputPatternsReconstruction:
         self.time = f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         self.log_file = f"logs/output_reconstruction_{self.time}.txt"
 
-    def reconstruct_output_patterns(self, input_grid: Matrix, 
-                                    annotated_input_patterns: List[AnnotatedPattern])\
-                                    -> Tuple[Matrix, List[AnnotatedPattern]]:
+    def reconstruct_output_patterns(self, index:int, input_grid: Matrix, 
+                                    annotated_input_patterns: List[AnnotatedPattern],
+                                    detailed_causation: str) -> Tuple[Matrix, List[AnnotatedPattern]]:
         """
         Reconstruct output patterns based on input grid, annotated input patterns, and detailed causation.
 
@@ -45,16 +45,17 @@ class OutputPatternsReconstruction:
         Returns:
             List[AnnotatedPattern]: Reconstructed and annotated output patterns.
         """
-        reconstruction_response = cached_call(reconstruct_output_patterns_chat.send_message)(
-            f"integrated/reconstruct_output_patterns_{self.page_number}.pickle",
+        reconstruction_call = cached_call(reconstruct_output_patterns_chat.send_message)(
+            f"integrated/reconstruct_output_patterns_{self.page_number}_{index}.pickle",
             ["reconstructed_output_patterns", "reconstructed_output_matrix"]
-        )(
+            )
+        reconstruction_response = reconstruction_call(
             challenge_description=challenge_description_obj,
             question=ReconstructOutputPatterns.sample_prompt(),
             input_grid=input_grid,
             annotated_input_patterns=annotated_input_patterns,
-            detailed_causation=self.detailed_causation
-        )
+            detailed_causation=detailed_causation
+            )
 
         reconstructed_output_patterns = reconstruction_response.reconstructed_output_patterns
         reconstructed_output_matrix = reconstruction_response.reconstructed_output_matrix
@@ -73,17 +74,16 @@ class OutputPatternsReconstruction:
         """
         Iteratively reconstruct output patterns for all input grids in the training set.
         """
-        for i, (input_output_pair, input_patterns) in enumerate(
-            zip(self.training_set, self.annotated_input_patterns)):
+        for index, (input_output_pair, input_patterns, detailed_causation) in enumerate(
+            zip(self.training_set, self.annotated_input_patterns, self.detailed_causation)):
             
-            print(f"Reconstructing output for training case {i+1}:")
+            print(f"Reconstructing output for training case {index+1}:")
             reconstructed_matrix, reconstructed_patterns = self.reconstruct_output_patterns(
-                input_output_pair.input,
-                input_patterns
+                index, input_output_pair.input, input_patterns, detailed_causation
             )
             self.reconstructed_output_patterns.append(reconstructed_patterns)
             self.reconstructed_output_matrices.append(reconstructed_matrix)
-            print(f"Reconstruction for training case {i+1} completed.\n")
+            print(f"Reconstruction for training case {index+1} completed.\n")
 
         print("All output patterns have been reconstructed.")
 
