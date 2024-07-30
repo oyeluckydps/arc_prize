@@ -36,6 +36,8 @@ def main():
             extractor.find_python_code(page_number, 'input')
             extractor.patterns_extractor('input')
             save_cached_data(f"cache/integrated/input_extractor_programatically_{page_number}.pickle", extractor)
+        else:
+            extractor = new_extractor
 
     # Find the output patterns for each training case.
     if IS_DEBUG:
@@ -47,13 +49,15 @@ def main():
         else:
             extractor = new_extractor
 
-    # Find the input pattern extractor code and patterns programatically for each input case.
+    # Find the output pattern extractor code and patterns programatically for each output case.
     if IS_DEBUG:
-        new_extractor = load_cached_data(f"cache/integrated/input_extractor_programatically_{page_number}.pickle")
+        new_extractor = load_cached_data(f"cache/integrated/output_extractor_programatically_{page_number}.pickle")
         if new_extractor is None:
-            extractor.find_python_code(page_number, 'input')
-            extractor.patterns_extractor('input')
-            save_cached_data(f"cache/integrated/input_extractor_programatically_{page_number}.pickle", extractor)
+            extractor.find_python_code(page_number, 'output')
+            extractor.patterns_extractor('output')
+            save_cached_data(f"cache/integrated/output_extractor_programatically_{page_number}.pickle", extractor)
+        else:
+            extractor = new_extractor
 
     # Annotate the input and output patterns for each training case.
     if IS_DEBUG:

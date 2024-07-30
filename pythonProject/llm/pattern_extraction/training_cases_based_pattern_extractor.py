@@ -115,7 +115,14 @@ class TrainingCasesBasedPatternExtractor:
 
             # Test the function with each matrix
             for matrix in matrices:
-                func(matrix.matrix)
+                res = func(matrix.matrix)
+                num_of_rows, num_of_cols = len(matrix.matrix), len(matrix.matrix[0])
+                matrices = [Matrix(matrix=matrix) for matrix in res]
+                for index, m in enumerate(matrices):
+                    assert (len(m.matrix) == num_of_rows, 
+                            f"The number of rows in the output matrix is not the same as the input matrix for the output matrix at index {index}.")
+                    assert (len(m.matrix[0]) == num_of_cols, 
+                            f"The number of columns in the output matrix is not the same as the input matrix for the output matrix at index {index}.")
 
             return True
         except Exception as e:
@@ -138,7 +145,7 @@ class TrainingCasesBasedPatternExtractor:
                     (f"integrated/pattern_description_python_code_{page_number}_{grid_type}_{i}.pickle")\
                     ([input_output_pair.output], output_pattern_description)
                 self.output_extraction_python_codes.append(python_code)
-                return self.output_extraction_python_codes
+            return self.output_extraction_python_codes
         else:
             raise ValueError(f"Invalid grid type: {grid_type}")
 

@@ -37,6 +37,11 @@ class PatternDescriptionPythonCode(dspy.Signature):
         Try to make all the assumptions in the code as general as possible. Make them dependent on variables and declare them at the top of the function.
         Describe all the constraints as separate functions and call them in the code when needed.
         Replace all other entries that are not a part of the pattern being extracted in the matrix with None.
+        Make sure that the value returned from teh function is a list of list of list of ints/None, which is a list of matrices and not a single matrix.
+        If a single matrix is the output, return a list of one matrix.
+        Ensure that the dimension of each matric in the output list is the same as the dimension of the input matrix. 
+        This is a must and you must write a code in such a way that the elements of output list has the same dimension as the input matrix.
+
         Do not write anthing else other than the python code in your response. Put appropriate comments and documentation in the code.
         """
         return prompt
