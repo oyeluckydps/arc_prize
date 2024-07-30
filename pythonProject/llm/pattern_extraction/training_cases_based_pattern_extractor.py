@@ -53,7 +53,6 @@ class TrainingCasesBasedPatternExtractor:
         """Find patterns based on the training set."""
         matrix_type = 'input'
 
-        probable_causation = self.probable_causation
         io_based_pattern = cached_call(io_based_pattern_chat.send_message)(f"integrated/io_based_pattern_description_{page_number}.pickle", ["pattern_description"])
         pattern_description_response = io_based_pattern(
             challenge_description = challenge_description_obj,
@@ -119,10 +118,10 @@ class TrainingCasesBasedPatternExtractor:
                 num_of_rows, num_of_cols = len(matrix.matrix), len(matrix.matrix[0])
                 matrices = [Matrix(matrix=matrix) for matrix in res]
                 for index, m in enumerate(matrices):
-                    assert (len(m.matrix) == num_of_rows, 
-                            f"The number of rows in the output matrix is not the same as the input matrix for the output matrix at index {index}.")
-                    assert (len(m.matrix[0]) == num_of_cols, 
-                            f"The number of columns in the output matrix is not the same as the input matrix for the output matrix at index {index}.")
+                    assert len(m.matrix) == num_of_rows, \
+                            f"The number of rows in the output matrix is not the same as the input matrix for the output matrix at index {index}."
+                    assert len(m.matrix[0]) == num_of_cols, \
+                            f"The number of columns in the output matrix is not the same as the input matrix for the output matrix at index {index}."
 
             return True
         except Exception as e:
