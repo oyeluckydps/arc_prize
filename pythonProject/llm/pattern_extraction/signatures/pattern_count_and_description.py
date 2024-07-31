@@ -38,6 +38,8 @@ class PatternCountAndDescription(dspy.Signature):
           - Its size or dimensions within this specific matrix
           - Any variations or unique features it has in this instance
           - How it relates to or interacts with other elements in this specific matrix
+        - Make sure that the number of the entries in the pattern_characteristics list is equal to the pattern count i.e. the number of identified patterns.
+            As each entry corresponds to the the characteristics description of one identified pattern.
         - Be very descriptive and precise about the characteristics, focusing on what makes this instance of the pattern unique.
 
         Please return:

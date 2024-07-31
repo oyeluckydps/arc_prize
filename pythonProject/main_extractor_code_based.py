@@ -21,7 +21,7 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
 
     if IS_DEBUG:
         # Block 1: Find causation and pattern descriptions
-        cache_file = f"cache/{VERSION}/{page_number}/checkpoint_pattern_description.pickle"
+        cache_file = f"cache/integrated/{VERSION}/{page_number}/checkpoint/1_pattern_description.pickle"
         cached_data = load_cached_data(cache_file)
 
         if cached_data:
@@ -36,7 +36,7 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
             save_cached_data(cache_file, extractor)
 
         # Block 2: Find Python code and extract patterns
-        cache_file = f"cache/{VERSION}/{page_number}/checkpoint_pattern_extraction.pickle"
+        cache_file = f"cache/integrated/{VERSION}/{page_number}/checkpoint/2_pattern_extraction.pickle"
         cached_data = load_cached_data(cache_file)
 
         if cached_data:
@@ -48,7 +48,7 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
             save_cached_data(cache_file, extractor)
 
         # Block 3: Map relevant input patterns to output patterns.
-        cache_file = f"cache/{VERSION}/{page_number}/checkpoint_relevant_input_patterns.pickle"
+        cache_file = f"cache/integrated/{VERSION}/{page_number}/checkpoint/3_relevant_input_patterns.pickle"
         cached_data = load_cached_data(cache_file)
 
         if cached_data:

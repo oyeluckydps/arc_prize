@@ -34,6 +34,10 @@ class PatternExtractionProgramatically:
         self.input_pattern_description: PatternDetails = None
         self.output_pattern_description: PatternDetails = None
         self.relevant_input_patterns_map: List[List[RelevantInputPatternMap]] = []
+        self.input_pattern_counts = []
+        self.input_pattern_characteristics = []
+        self.output_pattern_counts = []
+        self.output_pattern_characteristics = []
         self.time = f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         self.log_file = f"logs/pattern_extraction_{self.time}.txt"
 
@@ -60,7 +64,7 @@ class PatternExtractionProgramatically:
                             (f"integrated/{VERSION}/{page_number}/pattern_description_{grid_type}.pickle", ["pattern_description"])
         pattern_description_response = io_based_pattern(
             challenge_description = challenge_description_obj,
-            question = IOBasedPatternDescription.sample_prompt(),
+            question = IOBasedPatternDescription.sample_prompt(grid_type),
             input_ouptut_pairs = self.training_set,
             probable_causation = self.probable_causation,
             FOR_MATRIX_TYPE = grid_type
@@ -87,7 +91,7 @@ class PatternExtractionProgramatically:
         for idx, io_pair in enumerate(self.training_set):
             matrix = io_pair.input if grid_type == 'input' else io_pair.output
             
-            cache_file = f"cache/{VERSION}/{page_number}/{grid_type}_pattern_count_desc_{idx}.pickle"
+            cache_file = f"integrated/{VERSION}/{page_number}/pattern_count_desc_{grid_type}_{idx}.pickle"
             
             result = cached_call(pattern_count_and_description_chat.send_message)(
                 cache_file,
@@ -99,17 +103,9 @@ class PatternExtractionProgramatically:
             )
             
             if grid_type == 'input':
-                if not hasattr(self, 'input_pattern_counts'):
-                    self.input_pattern_counts = []
-                if not hasattr(self, 'input_pattern_characteristics'):
-                    self.input_pattern_characteristics = []
                 self.input_pattern_counts.append(result.pattern_count)
                 self.input_pattern_characteristics.append(result.pattern_characteristics)
             else:
-                if not hasattr(self, 'output_pattern_counts'):
-                    self.output_pattern_counts = []
-                if not hasattr(self, 'output_pattern_characteristics'):
-                    self.output_pattern_characteristics = []
                 self.output_pattern_counts.append(result.pattern_count)
                 self.output_pattern_characteristics.append(result.pattern_characteristics)
 

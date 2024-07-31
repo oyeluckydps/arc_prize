@@ -29,18 +29,18 @@ class IOBasedPatternDescription(dspy.Signature):
 
 
     @staticmethod
-    def sample_prompt() -> str:
-        prompt = """
+    def sample_prompt(FOR_MATRIX_TYPE) -> str:
+        prompt = f"""
             You have been provided with a list of input-output pairs. These pairs are part of training set that is described in the Challenge Description.
             Given these pairs, it is your task to identify the most relevant pattern that plays 
-            the most significant role in tranforming the input matrix to the output matrix for the FOR_MATRIX_TYPE matrices.
+            the most significant role in tranforming the input matrix to the output matrix for the {FOR_MATRIX_TYPE} matrices.
             To achieve this task you may first take a look at the causation/tranformation details provided in the probable_causation.
-            Now based on this probable causation, for matrices of the FOR_MATRIX_TYPE type, you need to identify the most relevant pattern 
-            that plays the most significant role in tranforming the input matrix to the output matrix.
+            Now based on this probable causation, for matrices of the {FOR_MATRIX_TYPE} type, you need to identify the most relevant pattern 
+            that plays the most significant role in tranformation of the input matrices to the output matrices.
 
-            Try to find the descriptions that covers many patterns across all the matrices of type FOR_MATRIX_TYPE.
+            Try to find the descriptions that covers many patterns across all the {FOR_MATRIX_TYPE} matrices.
 
-            1. Generic: Aim for descriptions that can apply to multiple instances across the FOR_MATRIX_TYPE matrices, rather than overly specific descriptions.
+            1. Generic: Aim for descriptions that can apply to multiple instances across the {FOR_MATRIX_TYPE} matrices, rather than overly specific descriptions.
 
             2. Physical features only: Focus on observable physical patterns or features in the matrices, not abstract concepts.
 
@@ -48,7 +48,7 @@ class IOBasedPatternDescription(dspy.Signature):
 
             4. Try to find the pattern description that covers the most patterns or most cells in the matrices.
 
-            5. MOST IMPORTANT: Try to find the pattern description for the patterns that play the most significant role in tranforming 
+            5. MOST IMPORTANT: Try to find the pattern description for the patterns that play the most significant role in tranformation from 
                 the input matrix to the output matrix.
             
             Guidelines:
@@ -70,15 +70,16 @@ class IOBasedPatternDescription(dspy.Signature):
             Use your imagination and creativity to find the most relevant pattern and try to describe it under a single generic description. 
             
             It is also possible that no special or specific pattenr is present that is relevant to the causation/tranformation.
-            In this case, you must be very sure that the complete matrix of FOR_MATRIX_TYPE is transformed or results to the transformation.
-            Only then you can mention the name as "COMPLETE_PATTERN_SET" signifying the the 
-            complete matrix of FOR_MATRIX_TYPE can no further be reduced to smaller or more relevant pattern and the complete matrix is relevant to the causation/tranformation.
+            In this case, you must be very sure that the complete {"input matrices are tranformed into output matrices" if FOR_MATRIX_TYPE == "input"
+                                        else "output matrices are results of transformation on input matrix"}.
+            Only then you can mention the name as "COMPLETE_PATTERN_SET" signifying that the 
+            complete {FOR_MATRIX_TYPE} matrix can no further be reduced to smaller or more relevant pattern and the complete matrix is relevant to the causation/tranformation.
 
             Remember you need to given description of only one pattern and the it should be unambiguos. 
             An LLM or any automated machine should be able to read your description and the extraction algorithm 
             to unambiguously identify the patterns that is being described from the matrices.
 
-            REMEBER: You have to give the pattern description for the matrices of FOR_MATRIX_TYPE only.
+            REMEBER: You have to give the pattern description for the matrices of {FOR_MATRIX_TYPE} only.
 
             Provide your analysis based on the following input-output matrix pairs:
         """
