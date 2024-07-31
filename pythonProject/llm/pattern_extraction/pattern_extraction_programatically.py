@@ -16,7 +16,7 @@ from .signatures.pattern_description_signature import PatternDetails
 from utils.logger import log_interaction
 from .pattern_extractor import extract_and_validate_patterns
 from .signatures.pattern_description_python_code import PatternDescriptionPythonCode, pattern_description_python_code
-
+from ..causation.signatures.causal_input_patterns import RelevantInputPatternMap, CausalInputPatterns, causal_input_patterns_chat
 
 class PatternExtractionProgramatically:
     """Class for extracting patterns programmatically."""
@@ -31,6 +31,7 @@ class PatternExtractionProgramatically:
         self.training_set: List[InputOutputPair] = training_set
         self.input_pattern_description: PatternDetails = None
         self.output_pattern_description: PatternDetails = None
+        self.relevant_input_patterns_map: List[List[RelevantInputPatternMap]] = []
         self.time = f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         self.log_file = f"logs/pattern_extraction_{self.time}.txt"
 
@@ -170,4 +171,38 @@ class PatternExtractionProgramatically:
             self.output_extracted_patterns.append([Matrix(matrix=pattern) for pattern in output_patterns])
         
         print("Extracted input and output patterns programmatically.")
+
+
+    def map_relevant_input_patterns(self, page_number: int):
+        """
+        Map relevant input patterns to output patterns for each input-output pair.
+        """
+        self.relevant_input_patterns_map = []
+
+        for io_pair_index, (io_pair, input_patterns, output_patterns) in enumerate(zip(self.training_set, self.input_extracted_patterns, self.output_extracted_patterns)):
+            output_pattern_maps = []
+
+            for output_pattern_index, output_pattern in enumerate(output_patterns):
+                cache_file = f"integrated/{VERSION}/{page_number}/relevant_input_pattern_map_{io_pair_index}_{output_pattern_index}.pickle"
+                
+                causal_input_patterns_result = cached_call(causal_input_patterns_chat.send_message)(
+                    cache_file,
+                    ["relevant_input_pattern_map"]
+                )
+
+                result = causal_input_patterns_result(
+                    challenge_description=challenge_description_obj,
+                    question=CausalInputPatterns.sample_prompt(),
+                    probable_causation=self.probable_causation,
+                    input_matrix=io_pair.input,
+                    output_matrix=io_pair.output,
+                    input_patterns=input_patterns,
+                    output_pattern=output_pattern
+                )
+
+                output_pattern_maps.append(result.relevant_input_pattern_map)
+
+            self.relevant_input_patterns_map.append(output_pattern_maps)
+
+        print("Mapped relevant input patterns to output patterns.")
 

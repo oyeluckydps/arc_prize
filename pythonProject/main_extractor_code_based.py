@@ -44,12 +44,24 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
             extractor.patterns_extractor()
             
             save_cached_data(cache_file, extractor)
+
+        # Block 3: Map relevant input patterns to output patterns.
+        cache_file = f"cache/{VERSION}/{page_number}/checkpoint_relevant_input_patterns.pickle"
+        cached_data = load_cached_data(cache_file)
+
+        if cached_data:
+            extractor = cached_data
+        else:
+            extractor.map_relevant_input_patterns(page_number)
+            
+            save_cached_data(cache_file, extractor)
     else:
         extractor.find_probable_causation(page_number)
         extractor.find_pattern_description(page_number, 'input')
         extractor.find_pattern_description(page_number, 'output')
         extractor.find_python_code(page_number)
         extractor.patterns_extractor()
+        extractor.map_relevant_input_patterns(page_number)
 
     return extractor
 
