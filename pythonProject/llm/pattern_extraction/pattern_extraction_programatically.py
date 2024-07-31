@@ -4,6 +4,7 @@ from typing import List, Dict, Union, Callable
 import ast
 import re
 
+from globals import VERSION
 from llm.integrated.signatures.io_based_pattern_description import IOBasedPatternDescription, io_based_pattern_chat
 from llm.causation.signatures.probable_causation import ProbableCausation, probable_causation_chat
 from llm.challenge_details.challenge_description import ChallengeDescription, challenge_description_obj
@@ -36,7 +37,7 @@ class PatternExtractionProgramatically:
 
     def find_probable_causation(self, page_number: int) -> ProbableCausation:
         """Find probable causation."""
-        probable_causation = cached_call(probable_causation_chat.send_message)(f"integrated/v1/probable_causation/{page_number}.pickle", ["causation_description"])
+        probable_causation = cached_call(probable_causation_chat.send_message)(f"integrated/{VERSION}/{page_number}/probable_causation.pickle", ["causation_description"])
         causation_response = probable_causation(
             challenge_description = challenge_description_obj,
             question = ProbableCausation.sample_prompt(),
@@ -53,7 +54,7 @@ class PatternExtractionProgramatically:
             raise ValueError(f"Invalid grid type: {grid_type}")
 
         io_based_pattern = cached_call(io_based_pattern_chat.send_message)\
-                            (f"integrated/v1/pattern_description/{page_number}_{grid_type}.pickle", ["pattern_description"])
+                            (f"integrated/{VERSION}/{page_number}/pattern_description_{grid_type}.pickle", ["pattern_description"])
         pattern_description_response = io_based_pattern(
             challenge_description = challenge_description_obj,
             question = IOBasedPatternDescription.sample_prompt(),
@@ -138,13 +139,13 @@ class PatternExtractionProgramatically:
         
         # For input
         input_python_code = pattern_description_python_code\
-            (f"integrated/v1/input_pattern_extraction_code/{page_number}_input.pickle")\
+            (f"integrated/{VERSION}/{page_number}/input_pattern_extraction_code.pickle")\
             ([io_pair.input for io_pair in self.training_set], self.input_pattern_description)
         self.input_extraction_python_code = input_python_code
 
         # For output
         output_python_code = pattern_description_python_code\
-            (f"integrated/output_pattern_extraction_code/{page_number}_output.pickle")\
+            (f"integrated/{VERSION}/{page_number}/output_pattern_extraction_code.pickle")\
             ([io_pair.output for io_pair in self.training_set], self.output_pattern_description)
         self.output_extraction_python_code = output_python_code
 

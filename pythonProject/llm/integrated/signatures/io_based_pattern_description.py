@@ -32,7 +32,8 @@ class IOBasedPatternDescription(dspy.Signature):
     def sample_prompt() -> str:
         prompt = """
             You have been provided with a list of input-output pairs. These pairs are part of training set that is described in the Challenge Description.
-            Given these pairs, it is your task to identify the most relevant pattern that plays the most significant role in tranforming the input matrix to the output matrix.
+            Given these pairs, it is your task to identify the most relevant pattern that plays 
+            the most significant role in tranforming the input matrix to the output matrix for the FOR_MATRIX_TYPE matrices.
             To achieve this task you may first take a look at the causation/tranformation details provided in the probable_causation.
             Now based on this probable causation, for matrices of the FOR_MATRIX_TYPE type, you need to identify the most relevant pattern 
             that plays the most significant role in tranforming the input matrix to the output matrix.
@@ -47,7 +48,8 @@ class IOBasedPatternDescription(dspy.Signature):
 
             4. Try to find the pattern description that covers the most patterns or most cells in the matrices.
 
-            5. MOST IMPORTANT: Try to find the pattern description for the patterns that play the most significant role in tranforming the input matrix to the output matrix.
+            5. MOST IMPORTANT: Try to find the pattern description for the patterns that play the most significant role in tranforming 
+                the input matrix to the output matrix.
             
             Guidelines:
             - A single description can identify multiple patterns of same type within one matrix.

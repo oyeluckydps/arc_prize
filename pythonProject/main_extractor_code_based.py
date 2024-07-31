@@ -3,7 +3,7 @@ from pathlib import Path
 
 from utils.file_handling import load_json_by_page
 from custom_types.matrix import Matrix
-from globals import IS_DEBUG
+from globals import IS_DEBUG, VERSION
 from custom_types.input_output_pair import InputOutputPair
 from utils.cacher import load_cached_data, save_cached_data
 from llm.pattern_extraction.pattern_extraction_programatically import PatternExtractionProgramatically
@@ -21,7 +21,7 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
 
     if IS_DEBUG:
         # Block 1: Find causation and pattern descriptions
-        cache_file = f"cache/v1/checkpoint/pattern_description_{page_number}.pickle"
+        cache_file = f"cache/{VERSION}/{page_number}/checkpoint_pattern_description.pickle"
         cached_data = load_cached_data(cache_file)
 
         if cached_data:
@@ -34,7 +34,7 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
             save_cached_data(cache_file, extractor)
 
         # Block 2: Find Python code and extract patterns
-        cache_file = f"cache/v1/checkpoint/pattern_extraction_{page_number}.pickle"
+        cache_file = f"cache/{VERSION}/{page_number}/checkpoint_pattern_extraction.pickle"
         cached_data = load_cached_data(cache_file)
 
         if cached_data:
