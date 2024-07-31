@@ -17,6 +17,7 @@ from utils.logger import log_interaction
 from .pattern_extractor import extract_and_validate_patterns
 from .signatures.pattern_description_python_code import PatternDescriptionPythonCode, pattern_description_python_code
 from ..causation.signatures.causal_input_patterns import RelevantInputPatternMap, CausalInputPatterns, causal_input_patterns_chat
+from ..causation.signatures.mapping_function_python_code import MappingFunctionPythonCode, mapping_function_python_code
 
 class PatternExtractionProgramatically:
     """Class for extracting patterns programmatically."""
@@ -206,3 +207,78 @@ class PatternExtractionProgramatically:
 
         print("Mapped relevant input patterns to output patterns.")
 
+
+    def find_mapping_python_code(self, page_number: int):
+        """
+        Generate, validate, and store Python code for each mapping in self.relevant_input_patterns_map.
+        """
+        self.mapping_python_codes = []
+
+        for io_pair_index, output_pattern_maps in enumerate(self.relevant_input_patterns_map):
+            io_pair_codes = []
+
+            for output_pattern_index, relevant_input_pattern_map in enumerate(output_pattern_maps):
+                cache_file = f"integrated/{VERSION}/{page_number}/mapping_function_python_code_{io_pair_index}_{output_pattern_index}.pickle"
+                
+                mapping_function_result = cached_call(mapping_function_python_code.send_message)(
+                    cache_file,
+                    ["python_code"]
+                )
+
+                result = mapping_function_result(
+                    question=MappingFunctionPythonCode.sample_prompt(),
+                    relevant_input_pattern_map=relevant_input_pattern_map
+                )
+
+                python_code = result.python_code
+
+                # Extract code from markdown if necessary
+                pattern = r"```python\n(.*?)```"
+                match = re.search(pattern, python_code, re.DOTALL)
+                if match:
+                    python_code = match.group(1).strip()
+
+                # Validate the generated Python code
+                validation_result = self._validate_mapping_python_code(python_code, relevant_input_pattern_map)
+                if validation_result is True:
+                    print(f"Python code validation successful for mapping {io_pair_index}_{output_pattern_index}.")
+                    io_pair_codes.append(python_code)
+                else:
+                    print(f"Python code validation failed for mapping {io_pair_index}_{output_pattern_index}: {validation_result}")
+                    raise ValueError(f"Invalid validation result for mapping {io_pair_index}_{output_pattern_index}: {validation_result}")
+
+            self.mapping_python_codes.append(io_pair_codes)
+        return self.mapping_python_codes
+    
+
+    print("Generated and validated Python code for each mapping.")
+
+    def _validate_mapping_python_code(self, python_code: str, relevant_input_pattern_map: RelevantInputPatternMap) -> Union[bool, str]:
+        """
+        Validate the generated Python code for mapping function.
+        Returns True if validation passes, or an error message as a string if it fails.
+        """
+        try:
+            func = self._get_python_function(python_code)
+
+            # Create input dictionary using actual matrices from AnnotatedPattern objects
+            input_dict = {}
+            for annotated_pattern in relevant_input_pattern_map.annotated_input_patterns:
+                tag = annotated_pattern.annotations.tag
+                matrix = annotated_pattern.matrix.matrix  # Get the actual matrix (List[List[Union[int, None]]])
+                input_dict[tag] = matrix
+
+            # Test the function with the actual input
+            result = func(input_dict)
+
+            # Basic checks on the result
+            assert isinstance(result, list), "Output is not a list"
+            assert all(isinstance(row, list) for row in result), "Output is not a list of lists"
+            assert all(all(isinstance(item, (int, type(None))) for item in row) for row in result), "Output contains non-int and non-None values"
+
+            # You might want to add more specific checks based on your requirements
+
+            return True
+        except Exception as e:
+            return str(e)
+    

@@ -53,6 +53,7 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
             extractor = cached_data
         else:
             extractor.map_relevant_input_patterns(page_number)
+            extractor.find_mapping_python_code(page_number)
             
             save_cached_data(cache_file, extractor)
     else:
@@ -62,7 +63,7 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
         extractor.find_python_code(page_number)
         extractor.patterns_extractor()
         extractor.map_relevant_input_patterns(page_number)
-
+        extractor.find_mapping_python_code(page_number)
     return extractor
 
 
