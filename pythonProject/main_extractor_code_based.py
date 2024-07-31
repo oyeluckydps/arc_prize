@@ -30,6 +30,8 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
             extractor.find_probable_causation(page_number)
             extractor.find_pattern_description(page_number, 'input')
             extractor.find_pattern_description(page_number, 'output')
+            extractor.count_and_describe_patterns(page_number, 'input')
+            extractor.count_and_describe_patterns(page_number, 'output')
             
             save_cached_data(cache_file, extractor)
 
@@ -60,6 +62,8 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
         extractor.find_probable_causation(page_number)
         extractor.find_pattern_description(page_number, 'input')
         extractor.find_pattern_description(page_number, 'output')
+        extractor.count_and_describe_patterns(page_number, 'input')
+        extractor.count_and_describe_patterns(page_number, 'output')
         extractor.find_python_code(page_number)
         extractor.patterns_extractor()
         extractor.map_relevant_input_patterns(page_number)

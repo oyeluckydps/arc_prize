@@ -18,6 +18,7 @@ class PatternDescriptionPythonCode(dspy.Signature):
     question: str = dspy.InputField()
     matrices: Union[List[Matrix], Matrix] = dspy.InputField()
     pattern_description: PatternDetails = dspy.InputField()
+    pattern_counts: List[int] = dspy.InputField()
 
     python_code: str = dspy.OutputField()
 
@@ -33,17 +34,19 @@ class PatternDescriptionPythonCode(dspy.Signature):
         Use other fields like description, location, unique_identifier, etc to your advantage to extract the patterns.
         Write your code as a python function that takes one matrix which is a list of lists of ints/None as input and 
         returns a list of patterns in the form of matrices (a list of lists of ints/None) as output.
+        Make sure that the number of patterns returned for each matrix is equal to the pattern_counts provided. So, when the python code is executed with
+        first matrix from the matrices list, the function should return a list of pattern_counts[0] patterns, and so on.
         In writing the python code, make sure that you put all the assumptions and constraints of the pattern description in the code.
         Try to make all the assumptions in the code as general as possible. Make them dependent on variables and declare them at the top of the function.
         Describe all the constraints as separate functions and call them in the code when needed.
         Replace all other entries that are not a part of the pattern being extracted in the matrix with None.
         Do not use any external libraries or packages. You may use the built-in python libraries like math, random, etc only if required.
-        Make sure that the value returned from teh function is a list of list of list of ints/None, which is a list of matrices and not a single matrix.
+        Make sure that the value returned from the function is a list of list of list of ints/None, which is a list of matrices and not a single matrix.
         If a single matrix is the output, return a list of one matrix.
         Ensure that the dimension of each matric in the output list is the same as the dimension of the input matrix. 
         This is a must and you must write a code in such a way that the elements of output list has the same dimension as the input matrix.
 
-        Do not write anthing else other than the python code in your response. Put appropriate comments and documentation in the code.
+        Do not write anything else other than the python code in your response. Put appropriate comments and documentation in the code.
         """
         return prompt
 

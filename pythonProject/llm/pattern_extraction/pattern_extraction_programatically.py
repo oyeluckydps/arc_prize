@@ -18,6 +18,7 @@ from .pattern_extractor import extract_and_validate_patterns
 from .signatures.pattern_description_python_code import PatternDescriptionPythonCode, pattern_description_python_code
 from ..causation.signatures.causal_input_patterns import RelevantInputPatternMap, CausalInputPatterns, causal_input_patterns_chat
 from ..causation.signatures.mapping_function_python_code import MappingFunctionPythonCode, mapping_function_python_code
+from .signatures.pattern_count_and_description import PatternCountAndDescription, pattern_count_and_description_chat
 
 class PatternExtractionProgramatically:
     """Class for extracting patterns programmatically."""
@@ -74,7 +75,74 @@ class PatternExtractionProgramatically:
         return pattern_description_response.pattern_description
 
 
-    def _find_python_code(self, matrices: List[Matrix], pattern_description: PatternDetails) -> str:
+    def count_and_describe_patterns(self, page_number: int, grid_type: str):
+        """
+        Count and describe pattern characteristics in input or output matrices based on their respective pattern descriptions.
+        """
+        if grid_type not in ['input', 'output']:
+            raise ValueError(f"Invalid grid type: {grid_type}")
+
+        pattern_description = self.input_pattern_description if grid_type == 'input' else self.output_pattern_description
+        
+        for idx, io_pair in enumerate(self.training_set):
+            matrix = io_pair.input if grid_type == 'input' else io_pair.output
+            
+            cache_file = f"cache/{VERSION}/{page_number}/{grid_type}_pattern_count_desc_{idx}.pickle"
+            
+            result = cached_call(pattern_count_and_description_chat.send_message)(
+                cache_file,
+                ["pattern_count", "pattern_characteristics"]
+            )(
+                challenge_description=challenge_description_obj,
+                pattern_description=pattern_description,
+                matrix=matrix
+            )
+            
+            if grid_type == 'input':
+                if not hasattr(self, 'input_pattern_counts'):
+                    self.input_pattern_counts = []
+                if not hasattr(self, 'input_pattern_characteristics'):
+                    self.input_pattern_characteristics = []
+                self.input_pattern_counts.append(result.pattern_count)
+                self.input_pattern_characteristics.append(result.pattern_characteristics)
+            else:
+                if not hasattr(self, 'output_pattern_counts'):
+                    self.output_pattern_counts = []
+                if not hasattr(self, 'output_pattern_characteristics'):
+                    self.output_pattern_characteristics = []
+                self.output_pattern_counts.append(result.pattern_count)
+                self.output_pattern_characteristics.append(result.pattern_characteristics)
+
+        print(f"Counted and described pattern characteristics in {grid_type} matrices.")
+
+
+    def _input_pattern_description_code_validator(self, index:int, param_matrix:Matrix, result: List[Matrix]) -> bool:
+        num_of_rows, num_of_cols = len(param_matrix.matrix), len(param_matrix.matrix[0])
+        matrices = [Matrix(matrix=matrix) for matrix in result]
+        assert len(result) == self.input_pattern_counts[index], \
+                    f"""The number of patterns in the result of the function called with input matrix at index {index} 
+                    is not the same as mentioned in the pattern_count for the matrix."""
+        for index, m in enumerate(matrices):
+            assert len(m.matrix) == num_of_rows, \
+                    f"The number of rows in the output matrix is not the same as the input matrix for the output matrix at index {index}."
+            assert len(m.matrix[0]) == num_of_cols, \
+                    f"The number of columns in the output matrix is not the same as the input matrix for the output matrix at index {index}."
+    
+    def _output_pattern_description_code_validator(self, index:int, param_matrix:Matrix, result: List[Matrix]) -> bool:
+        num_of_rows, num_of_cols = len(param_matrix.matrix), len(param_matrix.matrix[0])
+        matrices = [Matrix(matrix=matrix) for matrix in result]
+        assert len(result) == self.output_pattern_counts[index], \
+                    f"""The number of patterns in the result of the function called with output matrix at index {index} 
+                    is not the same as mentioned in the pattern_count for the matrix."""
+        for index, m in enumerate(matrices):
+            assert len(m.matrix) == num_of_rows, \
+                    f"The number of rows in the output matrix is not the same as the input matrix for the output matrix at index {index}."
+            assert len(m.matrix[0]) == num_of_cols, \
+                    f"The number of columns in the output matrix is not the same as the input matrix for the output matrix at index {index}."
+
+
+    def _find_python_code(self, matrices: List[Matrix], pattern_description: PatternDetails, 
+                          pattern_counts: List[int], post_result_validation_function: Callable) -> str:
         """
         Helper method to find python code corresponding to the pattern description and validate it.
         """
@@ -82,7 +150,8 @@ class PatternExtractionProgramatically:
         code_response = pattern_description_python_code.send_message(
             question=PatternDescriptionPythonCode.sample_prompt(),
             matrices=matrices,
-            pattern_description=pattern_description
+            pattern_description=pattern_description,
+            pattern_counts=pattern_counts
         )
         python_code = code_response.python_code
         
@@ -91,7 +160,7 @@ class PatternExtractionProgramatically:
         if match:
             python_code = match.group(1).strip()
         
-        validation_result = self._validate_python_code(python_code, matrices)
+        validation_result = self._validate_python_code(python_code, matrices, post_result_validation_function)
         if validation_result:
             print("Python code validation successful.")
             return python_code
@@ -111,7 +180,7 @@ class PatternExtractionProgramatically:
         return func
 
 
-    def _validate_python_code(self, python_code: str, matrices: List[Matrix]) -> Union[bool, str]:
+    def _validate_python_code(self, python_code: str, matrices: List[Matrix], post_result_validation_function: Callable) -> Union[bool, str]:
         """
         Validate the generated Python code by executing it with sample matrices.
         Returns True if validation passes, or an error message as a string if it fails.
@@ -120,15 +189,9 @@ class PatternExtractionProgramatically:
             func = self._get_python_function(python_code)
 
             # Test the function with each matrix
-            for matrix in matrices:
+            for index, matrix in enumerate(matrices):
                 res = func(matrix.matrix)
-                num_of_rows, num_of_cols = len(matrix.matrix), len(matrix.matrix[0])
-                matrices = [Matrix(matrix=matrix) for matrix in res]
-                for index, m in enumerate(matrices):
-                    assert len(m.matrix) == num_of_rows, \
-                            f"The number of rows in the output matrix is not the same as the input matrix for the output matrix at index {index}."
-                    assert len(m.matrix[0]) == num_of_cols, \
-                            f"The number of columns in the output matrix is not the same as the input matrix for the output matrix at index {index}."
+                post_result_validation_function(index, matrix, res)
 
             return True
         except Exception as e:
@@ -142,13 +205,15 @@ class PatternExtractionProgramatically:
         # For input
         input_python_code = pattern_description_python_code\
             (f"integrated/{VERSION}/{page_number}/input_pattern_extraction_code.pickle")\
-            ([io_pair.input for io_pair in self.training_set], self.input_pattern_description)
+            ([io_pair.input for io_pair in self.training_set], self.input_pattern_description, 
+             self.input_pattern_counts, self._input_pattern_description_code_validator)
         self.input_extraction_python_code = input_python_code
 
         # For output
         output_python_code = pattern_description_python_code\
             (f"integrated/{VERSION}/{page_number}/output_pattern_extraction_code.pickle")\
-            ([io_pair.output for io_pair in self.training_set], self.output_pattern_description)
+            ([io_pair.output for io_pair in self.training_set], self.output_pattern_description, 
+             self.output_pattern_counts, self._output_pattern_description_code_validator)
         self.output_extraction_python_code = output_python_code
 
 
