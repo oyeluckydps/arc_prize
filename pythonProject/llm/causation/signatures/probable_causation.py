@@ -19,8 +19,8 @@ class ProbableCausation(dspy.Signature):
     Defines the input and output fields for the pattern identification task.
     """
     challenge_description: ChallengeDescription = dspy.InputField(default=challenge_description_obj)
+    input_output_pairs: List[InputOutputPair] = dspy.InputField()
     question: str = dspy.InputField()
-    input_ouptut_pairs: List[InputOutputPair] = dspy.InputField()
     causation_description: str = dspy.OutputField()
 
     model_config = ConfigDict(from_attributes=True)
@@ -51,3 +51,4 @@ class ProbableCausation(dspy.Signature):
     
 
 probable_causation_chat = DSPy(strategy_method='one_shot', system_info='', model=claude, chat_model=claude_chat, io_signature=ProbableCausation)
+

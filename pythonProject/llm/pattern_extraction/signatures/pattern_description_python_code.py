@@ -15,10 +15,10 @@ class PatternDescriptionPythonCode(dspy.Signature):
     """
     Defines the input and output fields for the pattern identification task.
     """
-    question: str = dspy.InputField()
     matrices: Union[List[Matrix], Matrix] = dspy.InputField()
     pattern_description: PatternDetails = dspy.InputField()
     pattern_counts: List[int] = dspy.InputField()
+    question: str = dspy.InputField()
 
     python_code: str = dspy.OutputField()
 
@@ -51,3 +51,4 @@ class PatternDescriptionPythonCode(dspy.Signature):
         return prompt
 
 pattern_description_python_code = DSPy(strategy_method='one_shot', system_info='', model=claude, chat_model=claude_chat, io_signature=PatternDescriptionPythonCode)
+

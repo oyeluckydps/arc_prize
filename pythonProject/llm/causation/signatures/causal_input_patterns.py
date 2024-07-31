@@ -25,12 +25,12 @@ class CausalInputPatterns(dspy.Signature):
     A class to identify causal input patterns for a given output pattern and describe the causation.
     """
     challenge_description: ChallengeDescription = dspy.InputField(default=challenge_description_obj)
-    question: str = dspy.InputField()
     probable_causation: str = dspy.InputField()
     input_matrix: Matrix = dspy.InputField()
     output_matrix: Matrix = dspy.InputField()
     input_patterns: List[Matrix] = dspy.InputField()
     output_pattern: Matrix = dspy.InputField()
+    question: str = dspy.InputField()
 
     relevant_input_pattern_map: RelevantInputPatternMap = dspy.OutputField()
     

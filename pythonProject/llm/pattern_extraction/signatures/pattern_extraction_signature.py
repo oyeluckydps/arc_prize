@@ -20,11 +20,12 @@ class CollectionOfMatrices(BaseModel):
             yield self.result
 
 class PatternExtractionSignature(dspy.Signature):
-    query: str = dspy.InputField()
     pattern_description: PatternDetails = dspy.InputField()
     matrix: Matrix = dspy.InputField()
     num_of_rows: int = dspy.InputField()
     num_of_cols: int = dspy.InputField()
+    query: str = dspy.InputField()
+
     output_pattern: CollectionOfMatrices = dspy.OutputField()
     
     @staticmethod
@@ -87,5 +88,3 @@ class PatternExtractionSignature(dspy.Signature):
         description of the pattern and decide using your wisdom as what would be the most relevant segregation of the patterns.
         """
         return prompt
-
-

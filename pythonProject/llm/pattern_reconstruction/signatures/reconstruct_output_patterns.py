@@ -16,10 +16,10 @@ class ReconstructOutputPatterns(dspy.Signature):
     A class to reconstruct output patterns based on input patterns and causation rules.
     """
     challenge_description: ChallengeDescription = dspy.InputField(default=challenge_description_obj)
-    question: str = dspy.InputField()
     input_grid: Matrix = dspy.InputField()
     annotated_input_patterns: List[AnnotatedPattern] = dspy.InputField()
     detailed_causation: str = dspy.InputField()
+    question: str = dspy.InputField()
 
     reconstructed_output_patterns: List[AnnotatedPattern] = dspy.OutputField()
     reconstructed_output_matrix: Matrix = dspy.OutputField()

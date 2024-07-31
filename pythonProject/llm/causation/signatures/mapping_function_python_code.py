@@ -15,8 +15,8 @@ class MappingFunctionPythonCode(dspy.Signature):
     """
     Defines the input and output fields for the mapping function description task.
     """
-    question: str = dspy.InputField()
     relevant_input_pattern_map: RelevantInputPatternMap = dspy.InputField()
+    question: str = dspy.InputField()
 
     python_code: str = dspy.OutputField()
 
@@ -57,4 +57,5 @@ class MappingFunctionPythonCode(dspy.Signature):
         return prompt
 
 mapping_function_python_code = DSPy(strategy_method='one_shot', system_info='', model=claude, chat_model=claude_chat, io_signature=MappingFunctionPythonCode)
+
 

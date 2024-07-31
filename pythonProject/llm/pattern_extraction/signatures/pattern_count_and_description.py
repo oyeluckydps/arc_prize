@@ -19,6 +19,7 @@ class PatternCountAndDescription(dspy.Signature):
     challenge_description: ChallengeDescription = dspy.InputField()
     pattern_description: PatternDetails = dspy.InputField()
     matrix: Matrix = dspy.InputField()
+    question: str = dspy.InputField()
 
     pattern_count: int = dspy.OutputField()
     pattern_characteristics: List[str] = dspy.OutputField()

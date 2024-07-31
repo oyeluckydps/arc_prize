@@ -10,9 +10,9 @@ class MostRelevantPatternDescriptionSignature(dspy.Signature):
     """
     Defines the input and output fields for the pattern identification task.
     """
-    question: str = dspy.InputField()
     matrices: Dict[str, Matrix] = dspy.InputField()
     pattern_description: PatternDetails = dspy.OutputField()
+    question: str = dspy.InputField()
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -63,3 +63,4 @@ class MostRelevantPatternDescriptionSignature(dspy.Signature):
         """
         return prompt
     
+

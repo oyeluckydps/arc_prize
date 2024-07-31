@@ -18,10 +18,10 @@ class IOBasedPatternDescription(dspy.Signature):
     Defines the input and output fields for the pattern identification task.
     """
     challenge_description: ChallengeDescription = dspy.InputField(default=challenge_description_obj)
-    question: str = dspy.InputField()
     input_ouptut_pairs: List[InputOutputPair] = dspy.InputField()
     probable_causation: str = dspy.InputField()
     FOR_MATRIX_TYPE :str = dspy.InputField()
+    question: str = dspy.InputField()
 
     pattern_description: PatternDetails = dspy.OutputField()
 
@@ -86,4 +86,5 @@ class IOBasedPatternDescription(dspy.Signature):
         return prompt
     
 io_based_pattern_chat = DSPy(strategy_method='one_shot', system_info='', model=claude, chat_model=claude_chat, io_signature=IOBasedPatternDescription)
+
 

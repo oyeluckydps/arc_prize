@@ -36,12 +36,11 @@ class DetailedPatternDescriptionSignature(dspy.Signature):
     """
     Defines the input and output fields for the pattern identification task.
     """
-    question: str = dspy.InputField()
     matrices: Dict[str, Matrix] = dspy.InputField()
     patterns_description: PatternList = dspy.OutputField()
+    question: str = dspy.InputField()
 
     model_config = ConfigDict(from_attributes=True)
-    
 
     @staticmethod
     def sample_prompt() -> str:
@@ -71,4 +70,4 @@ class DetailedPatternDescriptionSignature(dspy.Signature):
             Provide your analysis based on the following input matrices:
         """
         return prompt
-    
+
