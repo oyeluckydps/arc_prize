@@ -4,7 +4,7 @@ import dspy
 from pydantic import BaseModel, Field, ConfigDict
 from custom_types.matrix import Matrix
 from custom_types.input_output_pair import InputOutputPair
-from ...pattern_extraction.signatures.pattern_description_signature import PatternDetails
+from ...pattern_extraction.signatures.pattern_description_signature import PatternDescription
 from ...challenge_details.challenge_description import ChallengeDescription, challenge_description_obj
 
 from ...connectors.dspy import DSPy
@@ -25,7 +25,7 @@ class InputPatternsBasedOutputPatternDescription(dspy.Signature):
     output_matrix: Matrix = dspy.InputField()
     question: str = dspy.InputField()
 
-    pattern_description: PatternDetails = dspy.OutputField()
+    pattern_description: PatternDescription = dspy.OutputField()
 
     model_config = ConfigDict(from_attributes=True)
 

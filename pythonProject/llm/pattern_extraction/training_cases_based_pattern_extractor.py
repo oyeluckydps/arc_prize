@@ -11,7 +11,7 @@ from utils.cacher import cached_call
 from custom_types.matrix import Matrix
 from custom_types.input_output_pair import InputOutputPair
 from .models import PatternTree, PatternNode, SchemaOfDecomposition
-from .signatures.pattern_description_signature import PatternDetails
+from .signatures.pattern_description_signature import PatternDescription
 from utils.logger import log_interaction
 from .pattern_extractor import extract_and_validate_patterns
 from ..integrated.signatures.input_patterns_based_output_pattern_description import input_based_output_pattern_chat, InputPatternsBasedOutputPatternDescription
@@ -30,8 +30,8 @@ class TrainingCasesBasedPatternExtractor:
             training_set (List[InputOutputPair]): List of input-output pairs for training.
         """
         self.training_set: List[InputOutputPair] = training_set
-        self.input_pattern_description: PatternDetails = None
-        self.output_pattern_descriptions: List[PatternDetails] = []
+        self.input_pattern_description: PatternDescription = None
+        self.output_pattern_descriptions: List[PatternDescription] = []
         self.time = f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         self.log_file = f"logs/pattern_extraction_{self.time}.txt"
 
@@ -49,7 +49,7 @@ class TrainingCasesBasedPatternExtractor:
         return causation_response.causation_description
     
 
-    def find_input_patterns(self, page_number: int) -> PatternDetails:
+    def find_input_patterns(self, page_number: int) -> PatternDescription:
         """Find patterns based on the training set."""
         matrix_type = 'input'
 
@@ -67,7 +67,7 @@ class TrainingCasesBasedPatternExtractor:
         return pattern_description_response.pattern_description
 
 
-    def _find_python_code(self, matrices: List[Matrix], pattern_description: PatternDetails) -> str:
+    def _find_python_code(self, matrices: List[Matrix], pattern_description: PatternDescription) -> str:
         """
         Helper method to find python code corresponding to the pattern description and validate it.
         """
@@ -128,7 +128,7 @@ class TrainingCasesBasedPatternExtractor:
             return str(e)
         
 
-    def find_python_code(self, page_number: int, grid_type: str) -> List[PatternDetails]:
+    def find_python_code(self, page_number: int, grid_type: str) -> List[PatternDescription]:
         """Find python code corresponding to the input or output pattern description."""
         pattern_description_python_code = cached_call(self._find_python_code)
         if grid_type == 'input':
@@ -200,7 +200,7 @@ class TrainingCasesBasedPatternExtractor:
         return extracted_input_patterns
     
 
-    def find_output_patterns(self, page_number: int) -> List[PatternDetails]:
+    def find_output_patterns(self, page_number: int) -> List[PatternDescription]:
         """Find patterns based on the training set."""
         matrix_type = 'output'
 

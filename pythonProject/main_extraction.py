@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from GUI.matplotlib.create_grid_image import create_grid_image
 
 def main():
-    background = PatternDetails(name='Background',
+    background = PatternDescription(name='Background',
                                 extraction="""1. Search the most prominent color that acts as the background for the matrices. 
                                 2. Look for a large area of contiguous cells with that value and extract the matrix.""",
                                 matrices=[1, 2],

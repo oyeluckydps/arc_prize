@@ -3,7 +3,7 @@ from typing import List, Optional, Dict
 import dspy
 
 from ...challenge_details.challenge_description import ChallengeDescription
-from .pattern_description_signature import PatternDetails
+from .pattern_description_signature import PatternDescription
 from custom_types.matrix import Matrix
 
 from ...connectors.dspy import DSPy
@@ -17,7 +17,7 @@ class PatternCountAndDescription(dspy.Signature):
     Defines the input and output fields for counting and describing pattern characteristics in a matrix.
     """
     challenge_description: ChallengeDescription = dspy.InputField()
-    pattern_description: PatternDetails = dspy.InputField()
+    pattern_description: PatternDescription = dspy.InputField()
     matrix: Matrix = dspy.InputField()
     question: str = dspy.InputField()
 

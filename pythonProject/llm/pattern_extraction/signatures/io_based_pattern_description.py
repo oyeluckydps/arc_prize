@@ -4,7 +4,7 @@ import dspy
 from pydantic import BaseModel, Field, ConfigDict
 from custom_types.matrix import Matrix
 from custom_types.input_output_pair import InputOutputPair
-from .pattern_description_signature import PatternDetails
+from .pattern_description_signature import PatternDescription
 from ...challenge_details.challenge_description import ChallengeDescription, challenge_description_obj
 
 from ...connectors.dspy import DSPy
@@ -23,7 +23,7 @@ class IOBasedPatternDescription(dspy.Signature):
     FOR_MATRIX_TYPE :str = dspy.InputField()
     question: str = dspy.InputField()
 
-    pattern_description: PatternDetails = dspy.OutputField()
+    pattern_description: PatternDescription = dspy.OutputField()
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -69,15 +69,14 @@ class IOBasedPatternDescription(dspy.Signature):
             
             Use your imagination and creativity to find the most relevant pattern and try to describe it under a single generic description. 
             
-            It is also possible that no special or specific pattenr is present that is relevant to the causation/tranformation.
+            It is also possible that no special or specific pattern is present that is relevant to the causation/tranformation.
             In this case, you must be very sure that the complete {"input matrices are tranformed into output matrices" if FOR_MATRIX_TYPE == "input"
                                         else "output matrices are results of transformation on input matrix"}.
             Only then you can mention the name as "COMPLETE_PATTERN_SET" signifying that the 
             complete {FOR_MATRIX_TYPE} matrix can no further be reduced to smaller or more relevant pattern and the complete matrix is relevant to the causation/tranformation.
 
             Remember you need to given description of only one pattern and the it should be unambiguos. 
-            An LLM or any automated machine should be able to read your description and the extraction algorithm 
-            to unambiguously identify the patterns that is being described from the matrices.
+            An LLM or any automated machine should be able to read your extraction algorithm to unambiguously extract the patterns from the matrices.
 
             REMEBER: You have to give the pattern description for the matrices of {FOR_MATRIX_TYPE} only.
 

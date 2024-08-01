@@ -4,11 +4,12 @@ from pathlib import Path
 
 from preprocess_sample_json import pp
 
+from custom_types.matrix import Matrix
 from .models import PatternTree, SchemaOfDecomposition, PatternNode
 from ..utils import log_interaction, load_cached_data, save_cached_data, dspy_detailed_pattern_descriptor, dspy_short_pattern_descriptor, dspy_pattern_extractor, dspy_most_relevant_pattern_descriptor
 from .pattern_extractor import extract_and_validate_patterns
 from .validation import check_completeness
-from .signatures.pattern_description_signature import DetailedPatternDescriptionSignature, Matrix, PatternDetails
+from .signatures.pattern_description_signature import DetailedPatternDescriptionSignature, PatternDescription
 from .signatures.most_relevant_pattern_description_signature import MostRelevantPatternDescriptionSignature
 from .short_pattern_description_signature import ShortPatternDescriptionSignature
 from .signatures.pattern_extraction_signature import PatternExtractionSignature
@@ -33,7 +34,7 @@ class GridPatternExtractor:
         self.time = f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         self.log_file = f"logs/pattern_extraction_{self.time}.txt"
 
-    def find_basic_patterns(self) -> List[PatternDetails]:
+    def find_basic_patterns(self) -> List[PatternDescription]:
         """Find patterns in the grids."""
         prompt = ShortPatternDescriptionSignature.sample_prompt()
         matrices = {f"{self.grids_type} Matrix {i+1}": grid for i, grid in enumerate(self.grids)}
@@ -52,7 +53,7 @@ class GridPatternExtractor:
         
         return response.patterns_description.list_of_patterns
 
-    def find_most_relevant_pattern(self) -> PatternDetails:
+    def find_most_relevant_pattern(self) -> PatternDescription:
         """Find a single most relevant pattern in the grids."""
         prompt = MostRelevantPatternDescriptionSignature.sample_prompt()
         matrices = {f"{self.grids_type} Matrix {i+1}": grid for i, grid in enumerate(self.grids)}
@@ -71,7 +72,7 @@ class GridPatternExtractor:
         
         return response.pattern_description
 
-    def find_patterns(self) -> List[PatternDetails]:
+    def find_patterns(self) -> List[PatternDescription]:
         """Find patterns in the grids."""
         prompt = DetailedPatternDescriptionSignature.sample_prompt()
         matrices = {f"{self.grids_type} Matrix {i+1}": grid for i, grid in enumerate(self.grids)}
@@ -141,7 +142,7 @@ class GridPatternExtractor:
         
         self._build_schema_of_decomposition(patterns)
 
-    def _build_pattern_tree(self, tree: PatternTree, extracted_patterns: List[Matrix], pattern_descriptions: List[PatternDetails]):
+    def _build_pattern_tree(self, tree: PatternTree, extracted_patterns: List[Matrix], pattern_descriptions: List[PatternDescription]):
         """Build a pattern tree for a single grid."""
         for pattern, description in zip(extracted_patterns, pattern_descriptions):
             child = PatternNode(pattern, description)
@@ -149,7 +150,7 @@ class GridPatternExtractor:
                 tree.root.children = []
             tree.root.children.append(child)
 
-    def _build_schema_of_decomposition(self, patterns: List[PatternDetails]):
+    def _build_schema_of_decomposition(self, patterns: List[PatternDescription]):
         """Build the schema of decomposition."""
         for pattern in patterns:
             child = PatternNode(Matrix(matrix=[]), pattern)

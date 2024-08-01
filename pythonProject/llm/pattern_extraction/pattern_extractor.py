@@ -1,7 +1,7 @@
 from typing import List
 
 from preprocess_sample_json import pp
-from .signatures.pattern_description_signature import Matrix, PatternDetails
+from .signatures.pattern_description_signature import Matrix, PatternDescription
 from .signatures.pattern_extraction_signature import PatternExtractionSignature
 from .validation import validate_patterns
 from ..utils import log_interaction, dspy_pattern_extractor
@@ -37,13 +37,13 @@ def compare_pattern_lists(list1: List[Matrix], list2: List[Matrix]) -> bool:
     return True
 
 
-def extract_and_validate_patterns(grid: Matrix, pattern_description: PatternDetails, log_file: str = None) -> List[Matrix]:
+def extract_and_validate_patterns(grid: Matrix, pattern_description: PatternDescription, log_file: str = None) -> List[Matrix]:
     """
     Extract patterns from a grid and validate them.
 
     Args:
         grid (Matrix): The input grid.
-        pattern_description (PatternDetails): The pattern description.
+        pattern_description (PatternDescription): The pattern description.
         log_file (str): Path to the log file.
 
     Returns:

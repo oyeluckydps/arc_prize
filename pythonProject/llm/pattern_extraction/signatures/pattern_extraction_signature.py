@@ -2,7 +2,7 @@ import os
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Union, Iterator
 
-from .pattern_description_signature import PatternDetails
+from .pattern_description_signature import PatternDescription
 from custom_types.matrix import Matrix
 
 import dspy
@@ -20,7 +20,7 @@ class CollectionOfMatrices(BaseModel):
             yield self.result
 
 class PatternExtractionSignature(dspy.Signature):
-    pattern_description: PatternDetails = dspy.InputField()
+    pattern_description: PatternDescription = dspy.InputField()
     matrix: Matrix = dspy.InputField()
     num_of_rows: int = dspy.InputField()
     num_of_cols: int = dspy.InputField()

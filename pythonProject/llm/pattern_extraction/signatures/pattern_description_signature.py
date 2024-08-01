@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from custom_types.matrix import Matrix
 
 # Define Pydantic models
-class PatternDetails(BaseModel):
+class PatternDescription(BaseModel):
     """
     Represents the details of a pattern found in matrices. 
     Try to find patterns that are non-overlapping, distinct, and exhaustive such that if one were to remove all identified patterns one by one from any matrix, nothing should remain.
@@ -15,6 +15,7 @@ class PatternDetails(BaseModel):
     
     name: str = Field(..., description="Give a suitable name to this pattern")
     matrices: Optional[List[int]] = Field(..., description="In which matrices is this pattern found?")
+    description: str = Field(..., description="Describe the pattern and only the pattern in detail. Do not include any other information. Focus on the physcial features of the pattern like shape, color, position, etc.")
     extraction: str = Field(..., description="If I need to extract this pattern from the matrices then how should I do it? Describe a brief algorithm that specifies the exact method to extract patterns adhering to this description.")
     prominent_reason: Optional[str] = Field(..., description="What makes it a prominent and outstanding pattern?")
     location: Optional[str] = Field(..., description="Where is the pattern to be found?")
@@ -29,7 +30,7 @@ class PatternList(BaseModel):
     """
     model_config = ConfigDict(populate_by_name=True)
     
-    list_of_patterns: List[PatternDetails] = Field(..., description="List all the pattern descriptions of the patterns found in the matrices")
+    list_of_patterns: List[PatternDescription] = Field(..., description="List all the pattern descriptions of the patterns found in the matrices")
 
 
 class DetailedPatternDescriptionSignature(dspy.Signature):

@@ -2,7 +2,7 @@
 from typing import List, Optional, Dict
 import dspy
 from pydantic import BaseModel, Field, ConfigDict
-from .pattern_description_signature import PatternDetails
+from .pattern_description_signature import PatternDescription
 from custom_types.matrix import Matrix
 
 
@@ -11,7 +11,7 @@ class MostRelevantPatternDescriptionSignature(dspy.Signature):
     Defines the input and output fields for the pattern identification task.
     """
     matrices: Dict[str, Matrix] = dspy.InputField()
-    pattern_description: PatternDetails = dspy.OutputField()
+    pattern_description: PatternDescription = dspy.OutputField()
     question: str = dspy.InputField()
 
     model_config = ConfigDict(from_attributes=True)

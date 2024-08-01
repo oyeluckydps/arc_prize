@@ -3,7 +3,7 @@ from typing import List
 from custom_types.input_output_pair import InputOutputPair
 from custom_types.matrix import Matrix
 from ..code_handling.python_code_generation import PythonCodeGenerationClass
-from .signatures.pattern_description_signature import PatternDetails
+from .signatures.pattern_description_signature import PatternDescription
 from .signatures.pattern_count_and_description import PatternCountAndDescription, pattern_count_and_description_chat
 from .signatures.io_based_pattern_description import IOBasedPatternDescription, io_based_pattern_chat
 from ..causation.signatures.probable_causation import ProbableCausation, probable_causation_chat
@@ -17,8 +17,8 @@ from globals import VERSION
 class PatternExtractionProgramatically:
     def __init__(self, training_set: List[InputOutputPair]):
         self.training_set: List[InputOutputPair] = training_set
-        self.input_pattern_description: PatternDetails = None
-        self.output_pattern_description: PatternDetails = None
+        self.input_pattern_description: PatternDescription = None
+        self.output_pattern_description: PatternDescription = None
         self.relevant_input_patterns_map: List[List[RelevantInputPatternMap]] = []
         self.input_pattern_counts = []
         self.input_pattern_characteristics = []
@@ -39,7 +39,7 @@ class PatternExtractionProgramatically:
         self.probable_causation = causation_response.causation_description
         return causation_response.causation_description
 
-    def find_pattern_description(self, page_number: int, grid_type: str) -> PatternDetails:
+    def find_pattern_description(self, page_number: int, grid_type: str) -> PatternDescription:
         if grid_type not in ['input', 'output']:
             raise ValueError(f"Invalid grid type: {grid_type}")
 

@@ -2,7 +2,7 @@ import os, sys
 from typing import List, Optional, Dict, Union
 import dspy
 from pydantic import BaseModel, Field, ConfigDict
-from .pattern_description_signature import PatternDetails
+from .pattern_description_signature import PatternDescription
 from custom_types.matrix import Matrix
 
 from ...connectors.dspy import DSPy
@@ -16,7 +16,7 @@ class PatternDescriptionPythonCode(dspy.Signature):
     Defines the input and output fields for the pattern identification task.
     """
     matrices: Union[List[Matrix], Matrix] = dspy.InputField()
-    pattern_description: PatternDetails = dspy.InputField()
+    pattern_description: PatternDescription = dspy.InputField()
     pattern_counts: List[int] = dspy.InputField()
     question: str = dspy.InputField()
 
