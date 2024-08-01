@@ -15,7 +15,7 @@ class PythonCodeGenerationClass:
         self.llm_call_function = llm_call_function
         self.generated_code = None
         self.func = None
-        self.max_retries = 3
+        self.max_retries = 5
 
     def generate_code(self, **kwargs):
         """
@@ -28,7 +28,7 @@ class PythonCodeGenerationClass:
         if match:
             python_code = match.group(1).strip()
         self.generated_code = python_code
-        self.func = self._get_python_function(self.generated_code)
+        self.func = self.get_python_function(self.generated_code)
         return self.generated_code
 
     def validate_code(self):
@@ -53,7 +53,7 @@ class PythonCodeGenerationClass:
         
         return True
 
-    def _execute_code(self, *args, **kwargs):
+    def execute_code(self, *args, **kwargs):
         """
         Call the python function generated from the output of the LLM>
         """
@@ -63,7 +63,7 @@ class PythonCodeGenerationClass:
     
 
 
-    def execute_code(self):
+    def execute_code_iteratively(self):
         """
         Execute the generated and validated Python code with the provided arguments.
         """
@@ -73,13 +73,13 @@ class PythonCodeGenerationClass:
         results = []
 
         for args, kwargs in zip(self.argument_tuples, self.keyword_argument_dicts):
-            result = self._execute_code(*args, **kwargs)
+            result = self.execute_code(*args, **kwargs)
             results.append(result)
 
         return results
 
     @staticmethod
-    def _get_python_function(python_code: str) -> Callable:
+    def get_python_function(python_code: str) -> Callable:
         """
         Get the Python function from the generated Python code.
         """
@@ -98,7 +98,8 @@ class PythonCodeGenerationClass:
             validation_result = self.validate_code()
             
             if validation_result is True:
-                return self.execute_code()
+                self.execute_code_iteratively()
+                return self
             else:
                 # If validation_result is not True, it's an error prompt
                 kwargs['question'] += f"\n\nAdditional instructions:\n{validation_result}"

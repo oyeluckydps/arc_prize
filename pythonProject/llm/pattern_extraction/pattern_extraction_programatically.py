@@ -25,6 +25,7 @@ class PatternExtractionProgramatically:
         self.input_pattern_characteristics = []
         self.output_pattern_counts = []
         self.output_pattern_characteristics = []
+        self.current_grid_type = None
         self.time = f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         self.log_file = f"logs/pattern_extraction_{self.time}.txt"
 
@@ -92,26 +93,30 @@ class PatternExtractionProgramatically:
 
         print(f"Counted and described pattern characteristics in {grid_type} matrices.")
 
+
+    def pattern_extraction_validation_function(self, index, result, args, kwargs):
+        matrix = args[0]
+        pattern_counts = self.input_pattern_counts if self.current_grid_type == 'input' else self.output_pattern_counts
+        if len(result) != pattern_counts[index]:
+            return f"Expected {pattern_counts[index]} patterns in the return of the function, but got {len(result)} patterns in return fromthe function."
+        for pattern in result:
+            if len(pattern) != len(matrix) or len(pattern[0]) != len(matrix[0]):
+                return "Pattern dimensions do not match input matrix dimensions"
+        return True
+
     def find_python_code(self, grid_type: str):
         if grid_type not in ['input', 'output']:
             raise ValueError(f"Invalid grid type: {grid_type}")
+
+        self.current_grid_type = grid_type
 
         matrices = [io_pair.input if grid_type == 'input' else io_pair.output for io_pair in self.training_set]
         pattern_description = self.input_pattern_description if grid_type == 'input' else self.output_pattern_description
         pattern_counts = self.input_pattern_counts if grid_type == 'input' else self.output_pattern_counts
 
-        def validation_function(index, result, args, kwargs):
-            matrix = args[0]
-            if len(result) != pattern_counts[index]:
-                return f"Expected {pattern_counts[index]} patterns in the return of the function, but got {len(result)} patterns in return fromthe function."
-            for pattern in result:
-                if len(pattern) != len(matrix) or len(pattern[0]) != len(matrix[0]):
-                    return "Pattern dimensions do not match input matrix dimensions"
-            return True
-
         code_generator = PythonCodeGenerationClass(
             llm_call_function=pattern_description_python_code.send_message,
-            validation_function=validation_function,
+            validation_function=self.pattern_extraction_validation_function,
             argument_tuples=[(matrix.matrix,) for matrix in matrices],
             keyword_argument_dicts=[{} for _ in range(len(matrices))]
         )
@@ -119,34 +124,41 @@ class PatternExtractionProgramatically:
         filename = f"integrated/{VERSION}/{self.page_number}/input_pattern_extraction_python_code.pickle" if grid_type == 'input' \
                     else f"integrated/{VERSION}/{self.page_number}/output_pattern_extraction_python_code.pickle"
         
-        code_generator_func = cached_call(code_generator.generate_until_success)(filename)
+        code_generator_func = cached_call(code_generator.generate_until_success)(filename, ['generated_code'])
         results = code_generator_func(
             question=PatternDescriptionPythonCode.sample_prompt(),
             matrices=matrices,
             pattern_description=pattern_description,
             pattern_counts=pattern_counts
         )
+        code_generator.generated_code = results.generated_code
+        code_generator.func = code_generator.get_python_function(code_generator.generated_code)
+
         if grid_type == 'input':
             self.input_extraction_python_code = code_generator
         else:
             self.output_extraction_python_code = code_generator
         print(f"Successfully generated and validated Python code for {grid_type} pattern extraction.")
-        return results
+        self.current_grid_type = None
 
 
     def input_patterns_extractor(self):
         """
         Extract patterns from input matrices using the corresponding Python functions.
         """
-        self.input_extracted_patterns = self.input_extraction_python_code.execute_code()
+        self.input_extracted_patterns = self.input_extraction_python_code.execute_code_iteratively()
         print("Extracted input patterns programmatically.")
+        for op in self.input_extracted_patterns:
+            print("\n\n")
+            for p in op:
+                print(Matrix(matrix=p))
 
 
     def output_patterns_extractor(self):
         """
         Extract patterns from output matrices using the corresponding Python functions.
         """
-        self.output_extracted_patterns = self.output_extraction_python_code.execute_code()
+        self.output_extracted_patterns = self.output_extraction_python_code.execute_code_iteratively()
         print("Extracted output patterns programmatically.")
 
 

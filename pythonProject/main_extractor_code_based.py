@@ -33,7 +33,7 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
             extractor.find_python_code('input')
             extractor.input_patterns_extractor()
 
-            save_cached_data(cache_file, extractor)
+            # save_cached_data(cache_file, extractor)
 
         # Block 2: Find INPUT pattern descriptions, count, python code, and extract patterns
         cache_file = f"cache/integrated/{VERSION}/{page_number}/checkpoint/2_output_pattern_extraction.pickle"
@@ -47,7 +47,7 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
             extractor.find_python_code('output')
             extractor.output_patterns_extractor()
             
-            save_cached_data(cache_file, extractor)
+            # save_cached_data(cache_file, extractor)
 
         # Block 3: Map relevant input patterns to output patterns.
         cache_file = f"cache/integrated/{VERSION}/{page_number}/checkpoint/3_relevant_input_patterns.pickle"
