@@ -15,7 +15,8 @@ from utils.cacher import cached_call
 from globals import VERSION
 
 class PatternExtractionProgramatically:
-    def __init__(self, training_set: List[InputOutputPair]):
+    def __init__(self, page_number: int, training_set: List[InputOutputPair]):
+        self.page_number = page_number
         self.training_set: List[InputOutputPair] = training_set
         self.input_pattern_description: PatternDescription = None
         self.output_pattern_description: PatternDescription = None
@@ -27,9 +28,9 @@ class PatternExtractionProgramatically:
         self.time = f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         self.log_file = f"logs/pattern_extraction_{self.time}.txt"
 
-    def find_probable_causation(self, page_number: int) -> ProbableCausation:
+    def find_probable_causation(self) -> ProbableCausation:
         probable_causation = cached_call(probable_causation_chat.send_message)\
-                            (f"integrated/{VERSION}/{page_number}/probable_causation.pickle", ["causation_description"])
+                            (f"integrated/{VERSION}/{self.page_number}/probable_causation.pickle", ["causation_description"])
         causation_response = probable_causation(
             challenge_description = challenge_description_obj,
             input_output_pairs = self.training_set,
@@ -39,12 +40,12 @@ class PatternExtractionProgramatically:
         self.probable_causation = causation_response.causation_description
         return causation_response.causation_description
 
-    def find_pattern_description(self, page_number: int, grid_type: str) -> PatternDescription:
+    def find_pattern_description(self, grid_type: str) -> PatternDescription:
         if grid_type not in ['input', 'output']:
             raise ValueError(f"Invalid grid type: {grid_type}")
 
         io_based_pattern = cached_call(io_based_pattern_chat.send_message)\
-                        (f"integrated/{VERSION}/{page_number}/pattern_description_{grid_type}.pickle", ["pattern_description"])
+                        (f"integrated/{VERSION}/{self.page_number}/pattern_description_{grid_type}.pickle", ["pattern_description"])
         pattern_description_response = io_based_pattern(
             challenge_description = challenge_description_obj,
             question = IOBasedPatternDescription.sample_prompt(grid_type),
@@ -61,7 +62,7 @@ class PatternExtractionProgramatically:
         
         return pattern_description_response.pattern_description
 
-    def count_and_describe_patterns(self, page_number: int, grid_type: str):
+    def count_and_describe_patterns(self, grid_type: str):
         if grid_type not in ['input', 'output']:
             raise ValueError(f"Invalid grid type: {grid_type}")
 
@@ -70,7 +71,7 @@ class PatternExtractionProgramatically:
         for idx, io_pair in enumerate(self.training_set):
             matrix = io_pair.input if grid_type == 'input' else io_pair.output
             
-            cache_file = f"integrated/{VERSION}/{page_number}/pattern_count_desc_{grid_type}_{idx}.pickle"
+            cache_file = f"integrated/{VERSION}/{self.page_number}/pattern_count_desc_{grid_type}_{idx}.pickle"
             
             result = cached_call(pattern_count_and_description_chat.send_message)(
                 cache_file,
@@ -91,7 +92,7 @@ class PatternExtractionProgramatically:
 
         print(f"Counted and described pattern characteristics in {grid_type} matrices.")
 
-    def find_python_code(self, page_number: int, grid_type: str):
+    def find_python_code(self, grid_type: str):
         if grid_type not in ['input', 'output']:
             raise ValueError(f"Invalid grid type: {grid_type}")
 
@@ -115,8 +116,8 @@ class PatternExtractionProgramatically:
             keyword_argument_dicts=[{} for _ in range(len(matrices))]
         )
 
-        filename = f"integrated/{VERSION}/{page_number}/input_pattern_extraction_python_code.pickle" if grid_type == 'input' \
-                    else f"integrated/{VERSION}/{page_number}/output_pattern_extraction_python_code.pickle"
+        filename = f"integrated/{VERSION}/{self.page_number}/input_pattern_extraction_python_code.pickle" if grid_type == 'input' \
+                    else f"integrated/{VERSION}/{self.page_number}/output_pattern_extraction_python_code.pickle"
         
         code_generator_func = cached_call(code_generator.generate_until_success)(filename)
         results = code_generator_func(
@@ -133,22 +134,30 @@ class PatternExtractionProgramatically:
         return results
 
 
-    def patterns_extractor(self):
+    def input_patterns_extractor(self):
         """
-        Extract patterns from input and output matrices using the corresponding Python functions.
+        Extract patterns from input matrices using the corresponding Python functions.
         """
         self.input_extracted_patterns = self.input_extraction_python_code.execute_code()
-        self.output_extracted_patterns = self.output_extraction_python_code.execute_code()
-        print("Extracted input and output patterns programmatically.")
+        print("Extracted input patterns programmatically.")
 
-    def map_relevant_input_patterns(self, page_number: int):
+
+    def output_patterns_extractor(self):
+        """
+        Extract patterns from output matrices using the corresponding Python functions.
+        """
+        self.output_extracted_patterns = self.output_extraction_python_code.execute_code()
+        print("Extracted output patterns programmatically.")
+
+
+    def map_relevant_input_patterns(self):
         self.relevant_input_patterns_map = []
 
         for io_pair_index, (io_pair, input_patterns, output_patterns) in enumerate(zip(self.training_set, self.input_extracted_patterns, self.output_extracted_patterns)):
             output_pattern_maps = []
 
             for output_pattern_index, output_pattern in enumerate(output_patterns):
-                cache_file = f"integrated/{VERSION}/{page_number}/relevant_input_pattern_map_{io_pair_index}_{output_pattern_index}.pickle"
+                cache_file = f"integrated/{VERSION}/{self.page_number}/relevant_input_pattern_map_{io_pair_index}_{output_pattern_index}.pickle"
                 
                 causal_input_patterns_result = cached_call(causal_input_patterns_chat.send_message)(
                     cache_file,
@@ -171,7 +180,7 @@ class PatternExtractionProgramatically:
 
         print("Mapped relevant input patterns to output patterns.")
 
-    # def find_mapping_python_code(self, page_number: int):
+    # def find_mapping_python_code(self):
     #     def validation_function(index, result, args, kwargs):
     #         input_dict = args[0]
     #         # Basic checks on the result
