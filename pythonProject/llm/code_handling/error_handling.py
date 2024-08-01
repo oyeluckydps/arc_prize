@@ -1,3 +1,6 @@
+from typing import Tuple, Dict, Any
+
+
 class ErrorHandler:
     @staticmethod
     def handle_execution_error(error: str, args: Tuple, kwargs: Dict, index: int) -> str:

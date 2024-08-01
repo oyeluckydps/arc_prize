@@ -4,7 +4,7 @@ from typing import List, Dict, Union, Callable
 import ast
 import re
 
-from llm.integrated.signatures.io_based_pattern_description import IOBasedPatternDescription, io_based_pattern_chat
+from llm.pattern_extraction.signatures.io_based_pattern_description import IOBasedPatternDescription, io_based_pattern_chat
 from llm.causation.signatures.probable_causation import ProbableCausation, probable_causation_chat
 from llm.challenge_details.challenge_description import ChallengeDescription, challenge_description_obj
 from utils.cacher import cached_call

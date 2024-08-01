@@ -42,7 +42,8 @@ def main_extractor_code_based(training_set: List[InputOutputPair], page_number: 
         if cached_data:
             extractor = cached_data
         else:
-            extractor.find_python_code(page_number)
+            extractor.find_python_code(page_number, 'input')
+            extractor.find_python_code(page_number, 'output')
             extractor.patterns_extractor()
             
             save_cached_data(cache_file, extractor)

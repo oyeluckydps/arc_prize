@@ -95,14 +95,14 @@ class PatternExtractionProgramatically:
         if grid_type not in ['input', 'output']:
             raise ValueError(f"Invalid grid type: {grid_type}")
 
-        matrices = [io_pair.input.matrix if grid_type == 'input' else io_pair.output.matrix for io_pair in self.training_set]
+        matrices = [io_pair.input if grid_type == 'input' else io_pair.output for io_pair in self.training_set]
         pattern_description = self.input_pattern_description if grid_type == 'input' else self.output_pattern_description
         pattern_counts = self.input_pattern_counts if grid_type == 'input' else self.output_pattern_counts
 
         def validation_function(index, result, args, kwargs):
             matrix = args[0]
             if len(result) != pattern_counts[index]:
-                return f"Expected {pattern_counts[index]} patterns, but got {len(result)}"
+                return f"Expected {pattern_counts[index]} patterns in the return of the function, but got {len(result)} patterns in return fromthe function."
             for pattern in result:
                 if len(pattern) != len(matrix) or len(pattern[0]) != len(matrix[0]):
                     return "Pattern dimensions do not match input matrix dimensions"
@@ -111,11 +111,15 @@ class PatternExtractionProgramatically:
         code_generator = PythonCodeGenerationClass(
             llm_call_function=pattern_description_python_code.send_message,
             validation_function=validation_function,
-            argument_tuples=[(matrix,) for matrix in matrices],
+            argument_tuples=[(matrix.matrix,) for matrix in matrices],
             keyword_argument_dicts=[{} for _ in range(len(matrices))]
         )
 
-        results = code_generator.generate_till_success(
+        filename = f"integrated/{VERSION}/{page_number}/input_pattern_extraction_python_code.pickle" if grid_type == 'input' \
+                    else f"integrated/{VERSION}/{page_number}/output_pattern_extraction_python_code.pickle"
+        
+        code_generator_func = cached_call(code_generator.generate_until_success)(filename)
+        results = code_generator_func(
             question=PatternDescriptionPythonCode.sample_prompt(),
             matrices=matrices,
             pattern_description=pattern_description,

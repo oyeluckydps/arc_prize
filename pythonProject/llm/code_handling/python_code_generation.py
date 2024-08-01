@@ -1,6 +1,7 @@
 import ast
 from typing import List, Tuple, Dict, Callable, Any, Union
 from .error_handling import ErrorHandler
+import re
 
 class PythonCodeGenerationClass:
     def __init__(self, 
@@ -21,7 +22,12 @@ class PythonCodeGenerationClass:
         Generate Python code using the provided signature class and arguments.
         """
         code_response = self.llm_call_function(**kwargs)
-        self.generated_code = code_response.python_code
+        python_code = code_response.python_code
+        pattern = r"```python\n(.*?)```"
+        match = re.search(pattern, python_code, re.DOTALL)
+        if match:
+            python_code = match.group(1).strip()
+        self.generated_code = python_code
         self.func = self._get_python_function(self.generated_code)
         return self.generated_code
 
@@ -29,14 +35,12 @@ class PythonCodeGenerationClass:
         """
         Validate the generated Python code using the provided validation function.
         """
-        if not self.generated_code:
-            raise ValueError("No code has been generated yet. Call generate_code() first.")
-        
-        func = self._get_python_function(self.generated_code)
+        if not self.func:
+            raise ValueError("No function has been generated yet. Call generate_code() first.")
         
         for index, (args, kwargs) in enumerate(zip(self.argument_tuples, self.keyword_argument_dicts)):
             try:
-                result = func(*args, **kwargs)
+                result = self.func(*args, **kwargs)
             except Exception as e:
                 return ErrorHandler.handle_execution_error(str(e), args, kwargs, index)
             
@@ -85,7 +89,7 @@ class PythonCodeGenerationClass:
         func = globals()[function_name]
         return func
 
-    def generate_till_success(self, max_retries: int = None, **kwargs):
+    def generate_until_success(self, max_retries: int = None, **kwargs):
         """
         Generate, validate, and execute the code with retries.
         """
